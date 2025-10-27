@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-sans text-body-lg bg-light-primary dark:bg-dark-primary text-text-light-primary dark:text-text-dark-primary;
+  }
+
+  * {
+    @apply transition-colors duration-300;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-text-light-primary dark:text-text-dark-primary;
+  }
+
+  p, span, div {
+    @apply text-text-light-primary dark:text-text-dark-primary;
+  }
+
+  label {
+    @apply text-text-light-primary dark:text-text-dark-primary;
+  }
+
+  th, td {
+    @apply text-text-light-primary dark:text-text-dark-primary;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-to-r from-accent-blue to-accent-purple bg-clip-text text-transparent;
+  }
+}
