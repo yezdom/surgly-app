@@ -73,22 +73,53 @@ export default function CreativeInsights() {
         throw new Error('Not authenticated');
       }
 
+      // Call facebook-get-campaigns and extract ads from campaigns
       const response = await fetch(
-        `${SUPABASE_URL}/functions/v1/facebook-get-creatives?ad_account_id=${selectedAccount}`,
+        `${SUPABASE_URL}/functions/v1/facebook-get-campaigns`,
         {
+          method: 'POST',
           headers: {
             Authorization: `Bearer ${session.access_token}`,
             'Content-Type': 'application/json',
           },
+          body: JSON.stringify({ 
+            adAccountId: selectedAccount 
+          }),
         }
       );
 
       if (!response.ok) {
-        throw new Error('Failed to fetch creatives');
+        throw new Error('Failed to fetch campaigns');
       }
 
       const data = await response.json();
-      const creativesWithScores = (data.creatives || []).map((creative: any) => ({
+      
+      // Extract all ads from all campaigns
+      const allAds: any[] = [];
+      (data.data || []).forEach((campaign: any) => {
+        if (campaign.ads && campaign.ads.length > 0) {
+          campaign.ads.forEach((ad: any) => {
+            allAds.push({
+              id: ad.id,
+              name: ad.name || 'Untitled Ad',
+              thumbnail_url: ad.thumbnail_url || ad.creative?.image_url || ad.creative?.thumbnail_url || 'https://via.placeholder.com/320x320/3b82f6/ffffff?text=No+Image',
+              status: ad.status,
+              insights: ad.insights || {
+                spend: '0',
+                impressions: '0',
+                clicks: '0',
+                ctr: '0',
+                cpc: '0',
+              },
+            });
+          });
+        }
+      });
+
+      console.log('Total ads extracted:', allAds.length);
+      console.log('Sample ad with thumbnail:', allAds[0]);
+
+      const creativesWithScores = allAds.map((creative: any) => ({
         ...creative,
         performance_score: calculatePerformanceScore(creative),
       }));
@@ -96,26 +127,9 @@ export default function CreativeInsights() {
       setCreatives(creativesWithScores);
     } catch (error) {
       console.error('Failed to load creatives:', error);
-      generateMockCreatives();
+      // Show empty state instead of mock data
+      setCreatives([]);
     }
-  }
-
-  function generateMockCreatives() {
-    const mockCreatives: AdCreative[] = Array.from({ length: 39 }, (_, i) => ({
-      id: `creative_${i + 1}`,
-      name: `Ad Creative ${i + 1}`,
-      thumbnail_url: `https://via.placeholder.com/320x320/3b82f6/ffffff?text=Ad+${i + 1}`,
-      status: ['ACTIVE', 'PAUSED', 'ARCHIVED'][Math.floor(Math.random() * 3)],
-      insights: {
-        spend: (Math.random() * 500 + 50).toFixed(2),
-        impressions: Math.floor(Math.random() * 50000 + 5000).toString(),
-        clicks: Math.floor(Math.random() * 1000 + 100).toString(),
-        ctr: (Math.random() * 5 + 0.5).toFixed(2),
-        cpc: (Math.random() * 3 + 0.1).toFixed(2),
-      },
-      performance_score: Math.floor(Math.random() * 100),
-    }));
-    setCreatives(mockCreatives);
   }
 
   function calculatePerformanceScore(creative: any): number {
@@ -265,7 +279,7 @@ export default function CreativeInsights() {
               Total Spend
             </p>
             <p className="text-3xl font-bold text-text-light-primary dark:text-text-dark-primary">
-              ${creatives.reduce((sum, c) => sum + parseFloat(c.insights.spend), 0).toFixed(2)}
+              £{creatives.reduce((sum, c) => sum + parseFloat(c.insights.spend), 0).toFixed(2)}
             </p>
           </div>
         </div>
@@ -303,7 +317,8 @@ export default function CreativeInsights() {
                     alt={creative.name}
                     className="w-full h-64 object-cover"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = 'https://via.placeholder.com/320x320/3b82f6/ffffff?text=No+Image';
+                      console.error('Image failed to load:', creative.thumbnail_url);
+                      (e.target as HTMLImageElement).src = 'https://via.placeholder.com/320x320/ef4444/ffffff?text=Image+Failed';
                     }}
                   />
                   <div className={`absolute top-3 right-3 px-3 py-1 rounded-full border ${status.color} backdrop-blur-sm flex items-center gap-2 font-medium text-sm`}>
@@ -321,7 +336,7 @@ export default function CreativeInsights() {
                     <div>
                       <p className="text-text-light-secondary dark:text-text-dark-secondary">Spend</p>
                       <p className="font-bold text-text-light-primary dark:text-text-dark-primary">
-                        ${parseFloat(creative.insights.spend).toFixed(0)}
+                        £{parseFloat(creative.insights.spend).toFixed(0)}
                       </p>
                     </div>
                     <div>
@@ -348,7 +363,7 @@ export default function CreativeInsights() {
                     <div className="bg-light-secondary dark:bg-dark-tertiary rounded-lg p-2">
                       <p className="text-text-light-secondary dark:text-text-dark-secondary">CPC</p>
                       <p className="font-bold text-text-light-primary dark:text-text-dark-primary">
-                        ${creative.insights.cpc}
+                        £{creative.insights.cpc}
                       </p>
                     </div>
                   </div>
@@ -401,7 +416,7 @@ export default function CreativeInsights() {
               No Creatives Found
             </h2>
             <p className="text-text-light-secondary dark:text-text-dark-secondary">
-              Connect your Facebook account to see your ad creatives
+              Your campaigns don't have any ads yet, or they're still loading.
             </p>
           </div>
         )}
