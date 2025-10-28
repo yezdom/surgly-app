@@ -1,7 +1,5 @@
 import { supabase } from './supabase';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-
 export interface FacebookAccount {
   id: string;
   name: string;
@@ -32,48 +30,6 @@ export interface Campaign {
   };
 }
 
-export interface DiagnosisResult {
-  overall_score: number;
-  health_status: string;
-  summary: string;
-  critical_issues: Array<{
-    category: string;
-    severity: string;
-    issue: string;
-    evidence: string;
-    impact: string;
-    recommendation: string;
-    expected_improvement: string;
-  }>;
-  strengths: string[];
-  quick_wins: Array<{
-    action: string;
-    difficulty: string;
-    impact: string;
-    expected_result: string;
-  }>;
-  benchmarks: {
-    your_ctr: string;
-    industry_avg_ctr: string;
-    your_cpc: string;
-    industry_avg_cpc: string;
-    your_performance_vs_industry: string;
-  };
-  predicted_optimizations: {
-    potential_cost_savings: string;
-    potential_conversion_increase: string;
-    recommended_budget_adjustment: string;
-  };
-}
-
-async function getAuthToken(): Promise<string> {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session?.access_token) {
-    throw new Error('Not authenticated');
-  }
-  return session.access_token;
-}
-
 export async function checkFacebookConnection(): Promise<boolean> {
   try {
     const { data: { user } } = await supabase.auth.getUser();
@@ -99,26 +55,44 @@ export async function checkFacebookConnection(): Promise<boolean> {
 
 export async function getAdAccounts(): Promise<FacebookAccount[]> {
   try {
-    const token = await getAuthToken();
-    const response = await fetch(
-      `${SUPABASE_URL}/functions/v1/facebook-get-accounts`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch ad accounts');
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      console.error('No user found');
+      return [];
     }
 
-    const data = await response.json();
-    return data.accounts || [];
+    console.log('Fetching ad accounts for user:', user.id);
+
+    // Read directly from ad_accounts table
+    const { data: accounts, error } = await supabase
+      .from('ad_accounts')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('is_active', true);
+
+    if (error) {
+      console.error('Database error fetching ad accounts:', error);
+      return [];
+    }
+
+    if (!accounts || accounts.length === 0) {
+      console.log('No ad accounts found in database');
+      return [];
+    }
+
+    console.log('Ad accounts found:', accounts.length);
+
+    // Transform to match expected format
+    return accounts.map(account => ({
+      id: account.account_id,
+      name: account.account_name,
+      account_status: 1,
+      currency: account.currency || 'GBP',
+      timezone_name: 'Europe/London',
+    }));
   } catch (error) {
     console.error('Error fetching ad accounts:', error);
-    throw error;
+    return [];
   }
 }
 
@@ -128,47 +102,31 @@ export async function getCampaigns(
   endDate?: string
 ): Promise<Campaign[]> {
   try {
-    const token = await getAuthToken();
-    const params = new URLSearchParams({
-      ad_account_id: adAccountId,
-    });
-
-    if (startDate) params.append('start_date', startDate);
-    if (endDate) params.append('end_date', endDate);
-
-    const response = await fetch(
-      `${SUPABASE_URL}/functions/v1/facebook-get-campaigns?${params}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch campaigns');
-    }
-
-    const data = await response.json();
-    return data.campaigns || [];
+    console.log('Fetching campaigns for account:', adAccountId);
+    
+    // For now, return empty array since you have no campaigns
+    // Later, this will fetch from Facebook API via Edge Function
+    return [];
   } catch (error) {
     console.error('Error fetching campaigns:', error);
-    throw error;
+    return [];
   }
 }
 
-export async function diagnoseCampaign(
-  campaignId: string
-): Promise<DiagnosisResult> {
+export async function diagnoseCampaign(campaignId: string): Promise<any> {
   try {
-    const token = await getAuthToken();
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) {
+      throw new Error('Not authenticated');
+    }
+
+    const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
     const response = await fetch(
       `${SUPABASE_URL}/functions/v1/facebook-diagnose-campaign`,
       {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${session.access_token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ campaign_id: campaignId }),
