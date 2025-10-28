@@ -55,7 +55,7 @@ export default function CreativeInsights() {
       const accounts = await getAdAccounts();
       setAdAccounts(accounts);
       if (accounts.length > 0) {
-        setSelectedAccount(accounts[0].id);
+        setSelectedAccount(accounts[0].account_id);
       }
     } catch (error) {
       console.error('Failed to load ad accounts:', error);
@@ -77,9 +77,14 @@ export default function CreativeInsights() {
 
       console.log('Fetching campaigns for account:', selectedAccount);
 
-      // UPDATED: Now calling facebook-get-campaigns instead of facebook-get-creatives
+      // UPDATED: Fetch campaigns with high-res creatives
+      const dateRange = {
+        startDate: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        endDate: new Date().toISOString().split('T')[0]
+      };
+
       const response = await fetch(
-        `${SUPABASE_URL}/functions/v1/facebook-get-campaigns?account_id=${selectedAccount}`,
+        `${SUPABASE_URL}/functions/v1/facebook-get-campaigns?account_id=${selectedAccount}&start_date=${dateRange.startDate}&end_date=${dateRange.endDate}&include_creatives=true`,
         {
           headers: {
             Authorization: `Bearer ${session.access_token}`,
@@ -97,26 +102,30 @@ export default function CreativeInsights() {
       const data = await response.json();
       console.log('Campaigns response:', data);
 
-      // Extract ads from campaigns
+      // Extract ads from campaigns with HIGH-RES images
       const allAds: AdCreative[] = [];
-      
+
       if (data.data && Array.isArray(data.data)) {
         data.data.forEach((campaign: any) => {
-          if (campaign.ads?.data && Array.isArray(campaign.ads.data)) {
-            campaign.ads.data.forEach((ad: any) => {
-              // Map the ad data to our AdCreative interface
+          if (campaign.ads && Array.isArray(campaign.ads)) {
+            campaign.ads.forEach((ad: any) => {
+              // Use high_res_image_url from the updated Edge Function
+              const imageUrl = ad.creative?.high_res_image_url
+                || ad.creative?.image_url
+                || ad.creative?.thumbnail_url
+                || null;
+
               allAds.push({
                 id: ad.id,
                 name: ad.name || 'Unnamed Ad',
-                image_url: ad.image_url || null,  // NEW: From Supabase Storage
-                storage_error: ad.storage_error || null,  // NEW: Track errors
+                image_url: imageUrl,
                 status: ad.status || 'UNKNOWN',
                 insights: {
-                  spend: ad.insights?.data?.[0]?.spend || '0',
-                  impressions: ad.insights?.data?.[0]?.impressions || '0',
-                  clicks: ad.insights?.data?.[0]?.clicks || '0',
-                  ctr: ad.insights?.data?.[0]?.ctr || '0',
-                  cpc: ad.insights?.data?.[0]?.cpc || '0',
+                  spend: ad.insights?.spend || '0',
+                  impressions: ad.insights?.impressions || '0',
+                  clicks: ad.insights?.clicks || '0',
+                  ctr: ad.insights?.ctr || '0',
+                  cpc: ad.insights?.cpc || '0',
                 },
                 performance_score: 0, // Will be calculated next
               });

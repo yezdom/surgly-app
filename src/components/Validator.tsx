@@ -113,7 +113,8 @@ export default function Validator() {
           try {
             const accounts = await getAdAccounts();
             if (accounts.length > 0) {
-              const campaigns = await getCampaigns(accounts[0].id);
+              const response = await getCampaigns(accounts[0].account_id);
+              const campaigns = response.data || [];
               const activeCampaigns = campaigns.filter((c: any) => c.status === 'ACTIVE');
               passed = activeCampaigns.length > 0;
               if (!passed) error = 'No active campaigns found';
@@ -135,7 +136,8 @@ export default function Validator() {
                 .split('T')[0];
               const today = new Date().toISOString().split('T')[0];
 
-              const campaigns = await getCampaigns(accounts[0].id, sevenDaysAgo, today);
+              const response = await getCampaigns(accounts[0].account_id, sevenDaysAgo, today);
+              const campaigns = response.data || [];
               const hasImpressions = campaigns.some(
                 (c: any) => parseInt(c.insights?.impressions || '0') > 0
               );

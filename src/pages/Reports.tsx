@@ -77,7 +77,7 @@ export default function Reports() {
       const accounts = await getAdAccounts();
       setAdAccounts(accounts);
       if (accounts.length > 0) {
-        setSelectedAccount(accounts[0].id);
+        setSelectedAccount(accounts[0].account_id);
       }
     } catch (error) {
       console.error('Failed to load ad accounts:', error);
@@ -88,8 +88,8 @@ export default function Reports() {
 
   async function loadCampaigns() {
     try {
-      const data = await getCampaigns(selectedAccount, startDate, endDate);
-      setCampaigns(data);
+      const response = await getCampaigns(selectedAccount, startDate, endDate);
+      setCampaigns(response.data || []);
     } catch (error) {
       console.error('Failed to load campaigns:', error);
     }

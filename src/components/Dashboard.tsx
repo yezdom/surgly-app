@@ -64,7 +64,8 @@ export default function Dashboard() {
             .split('T')[0];
           const today = new Date().toISOString().split('T')[0];
 
-          const campaigns = await getCampaigns(accounts[0].id, sevenDaysAgo, today);
+          const response = await getCampaigns(accounts[0].account_id, sevenDaysAgo, today);
+          const campaigns = response.data || [];
 
           const totalSpend = campaigns.reduce(
             (sum: number, c: any) => sum + parseFloat(c.insights?.spend || '0'),

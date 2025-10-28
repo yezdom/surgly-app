@@ -59,7 +59,7 @@ export default function AdDoctor() {
       const accounts = await getAdAccounts();
       setAdAccounts(accounts);
       if (accounts.length > 0) {
-        setSelectedAccount(accounts[0].id);
+        setSelectedAccount(accounts[0].account_id);
       }
     } catch (error) {
       console.error('Failed to load ad accounts:', error);
@@ -70,8 +70,8 @@ export default function AdDoctor() {
 
   async function loadCampaigns() {
     try {
-      const data = await getCampaigns(selectedAccount);
-      setCampaigns(data);
+      const response = await getCampaigns(selectedAccount);
+      setCampaigns(response.data || []);
     } catch (error) {
       console.error('Failed to load campaigns:', error);
     }

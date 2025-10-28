@@ -22,19 +22,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check active session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
+    // Check active session and fetch user profile
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session?.user) {
+        const extendedUser = await fetchUserProfile(session.user);
+        setUser(extendedUser);
+      } else {
+        setUser(null);
+      }
       setLoading(false);
     });
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session?.user) {
+        const extendedUser = await fetchUserProfile(session.user);
+        setUser(extendedUser);
+      } else {
+        setUser(null);
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  async function fetchUserProfile(user: User): Promise<ExtendedUser> {
+    try {
+      const { data } = await supabase
+        .from('users')
+        .select('is_active')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      return {
+        ...user,
+        is_active: data?.is_active ?? true
+      };
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      return { ...user, is_active: true };
+    }
+  }
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
