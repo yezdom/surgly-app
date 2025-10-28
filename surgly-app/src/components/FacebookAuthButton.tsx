@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Facebook, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+import { Facebook, Loader2, CheckCircle } from 'lucide-react';
 import { checkFacebookConnection } from '../lib/facebookService';
 
 export default function FacebookAuthButton() {

@@ -4,13 +4,9 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { supabase } from '../lib/supabase';
 import {
-  LayoutDashboard,
-  FileText,
-  Settings,
   Sun,
   Moon,
   LogOut,
-  Shield,
 } from 'lucide-react';
 
 interface DashboardLayoutProps {

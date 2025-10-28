@@ -5,10 +5,7 @@ import { supabase } from '../lib/supabase';
 import {
   Image as ImageIcon,
   TrendingUp,
-  TrendingDown,
   DollarSign,
-  Eye,
-  MousePointer,
   Sparkles,
   AlertTriangle,
   CheckCircle,

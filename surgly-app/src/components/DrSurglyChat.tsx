@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { X, Send, Stethoscope, Minimize2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { supabase } from '../lib/supabase';
 
 interface Message {
   id: string;

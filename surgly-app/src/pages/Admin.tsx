@@ -12,9 +12,7 @@ import {
   Ban,
   Trash2,
   CheckCircle,
-  XCircle,
   AlertCircle,
-  TrendingUp,
 } from 'lucide-react';
 
 interface User {

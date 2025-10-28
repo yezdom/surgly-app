@@ -11,14 +11,6 @@ export default function Footer() {
     { name: 'Pricing', href: '/pricing' },
   ];
 
-  const resourceLinks = [
-    { name: 'Documentation', href: '#' },
-    { name: 'API Reference', href: '#' },
-    { name: 'Blog', href: '#' },
-    { name: 'Case Studies', href: '#' },
-    { name: 'FAQs', href: '#' },
-    { name: 'Contact Support', href: '/contact' },
-  ];
 
   const legalLinks = [
     { name: 'Terms of Service', href: '/terms' },

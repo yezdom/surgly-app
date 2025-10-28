@@ -20,7 +20,6 @@ import {
 } from 'recharts';
 import {
   Download,
-  Calendar,
   TrendingUp,
   DollarSign,
   Eye,
@@ -28,7 +27,6 @@ import {
   FileText,
   Sparkles,
   Settings as SettingsIcon,
-  ChevronDown,
 } from 'lucide-react';
 import { getAdAccounts, getCampaigns } from '../lib/facebookService';
 import jsPDF from 'jspdf';
@@ -57,8 +55,6 @@ export default function Reports() {
     primaryColor: '#3b82f6',
     brandingEnabled: false,
   });
-  const [compareMode, setCompareMode] = useState(false);
-  const [selectedCampaigns, setSelectedCampaigns] = useState<string[]>([]);
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({
     key: 'name',
     direction: 'asc',
@@ -526,7 +522,7 @@ export default function Reports() {
                   fill="#8884d8"
                   dataKey="value"
                 >
-                  {pieData.map((entry, index) => (
+                  {pieData.map((_entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>

@@ -67,11 +67,11 @@ export default function Dashboard() {
           const campaigns = await getCampaigns(accounts[0].id, sevenDaysAgo, today);
 
           const totalSpend = campaigns.reduce(
-            (sum, c) => sum + parseFloat(c.insights?.spend || '0'),
+            (sum: number, c: any) => sum + parseFloat(c.insights?.spend || '0'),
             0
           );
           const avgROAS = campaigns.length > 0
-            ? campaigns.reduce((sum, c) => sum + parseFloat(c.insights?.roas || '0'), 0) / campaigns.length
+            ? campaigns.reduce((sum: number, c: any) => sum + parseFloat(c.insights?.roas || '0'), 0) / campaigns.length
             : 0;
 
           setStats({

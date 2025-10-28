@@ -27,7 +27,7 @@ export async function getAdAccounts() {
   }
 }
 
-export async function getCampaigns(accountId: string) {
+export async function getCampaigns(accountId: string, startDate?: string, endDate?: string) {
   try {
     const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
     const { data: { session } } = await supabase.auth.getSession();
@@ -38,16 +38,17 @@ export async function getCampaigns(accountId: string) {
 
     console.log('Fetching campaigns for account:', accountId);
 
-    // FIXED: Use consistent parameter name 'account_id'
-    const response = await fetch(
-      `${SUPABASE_URL}/functions/v1/facebook-get-campaigns?account_id=${accountId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+    let url = `${SUPABASE_URL}/functions/v1/facebook-get-campaigns?account_id=${accountId}`;
+    if (startDate && endDate) {
+      url += `&start_date=${startDate}&end_date=${endDate}`;
+    }
+
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+      },
+    });
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -62,5 +63,31 @@ export async function getCampaigns(accountId: string) {
   } catch (error) {
     console.error('Error in getCampaigns:', error);
     throw error;
+  }
+}
+
+export async function checkFacebookConnection(): Promise<boolean> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return false;
+    }
+
+    const { data } = await supabase
+      .from('facebook_tokens')
+      .select('id, expires_at')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (!data) {
+      return false;
+    }
+
+    const expiresAt = new Date(data.expires_at);
+    return expiresAt > new Date();
+  } catch (error) {
+    console.error('Error checking Facebook connection:', error);
+    return false;
   }
 }

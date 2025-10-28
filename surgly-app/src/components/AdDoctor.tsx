@@ -5,7 +5,6 @@ import { getAdAccounts, getCampaigns } from '../lib/facebookService';
 import {
   Stethoscope,
   TrendingUp,
-  TrendingDown,
   DollarSign,
   Eye,
   MousePointer,

@@ -69,7 +69,7 @@ export default function FacebookCallback() {
         throw new Error(errorData.error || 'Failed to exchange code');
       }
 
-      const data = await response.json();
+      await response.json();
 
       setMessage('Fetching your ad accounts...');
 
