@@ -104,9 +104,41 @@ export async function getCampaigns(
   try {
     console.log('Fetching campaigns for account:', adAccountId);
     
-    // For now, return empty array since you have no campaigns
-    // Later, this will fetch from Facebook API via Edge Function
-    return [];
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) {
+      console.error('Not authenticated');
+      return [];
+    }
+
+    const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+    
+    const response = await fetch(
+      `${SUPABASE_URL}/functions/v1/facebook-get-campaigns`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          adAccountId: adAccountId,
+          startDate: startDate,
+          endDate: endDate
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      console.error('Failed to fetch campaigns, status:', response.status);
+      const errorText = await response.text();
+      console.error('Error response:', errorText);
+      return [];
+    }
+
+    const data = await response.json();
+    console.log('Campaigns fetched:', data.data?.length || 0);
+    
+    return data.data || [];
   } catch (error) {
     console.error('Error fetching campaigns:', error);
     return [];
