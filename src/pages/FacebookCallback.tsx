@@ -1,114 +1,131 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 
 export default function FacebookCallback() {
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
-  const [message, setMessage] = useState('Connecting to Facebook...');
+  const [status, setStatus] = useState<'processing' | 'success' | 'error'>('processing');
+  const [message, setMessage] = useState('Completing Facebook authentication...');
 
   useEffect(() => {
     handleCallback();
-  }, [searchParams]);
+  }, []);
 
   async function handleCallback() {
-    const code = searchParams.get('code');
-    const state = searchParams.get('state');
-    const error = searchParams.get('error');
-
-    if (error) {
-      setStatus('error');
-      setMessage(`Facebook connection failed: ${error}`);
-      setTimeout(() => navigate('/settings'), 3000);
-      return;
-    }
-
-    const savedState = sessionStorage.getItem('fb_oauth_state');
-    if (state !== savedState) {
-      setStatus('error');
-      setMessage('Invalid state parameter. Please try again.');
-      setTimeout(() => navigate('/settings'), 3000);
-      return;
-    }
-
-    if (!code) {
-      setStatus('error');
-      setMessage('No authorization code received');
-      setTimeout(() => navigate('/settings'), 3000);
-      return;
-    }
-
     try {
-      setMessage('Exchanging authorization code...');
+      // Get code from URL (Facebook redirected here with the code)
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('code');
+      const error = params.get('error');
 
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        throw new Error('Not authenticated');
+      if (error) {
+        throw new Error(`Facebook denied access: ${error}`);
       }
 
+      if (!code) {
+        throw new Error('No authorization code received from Facebook');
+      }
+
+      console.log('Got authorization code from Facebook');
+      setMessage('Exchanging authorization code...');
+
+      // Get current user session (user must be logged in first)
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error('Please log in first before connecting Facebook');
+      }
+
+      // Call Edge Function with the code
       const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+      
       const response = await fetch(
         `${SUPABASE_URL}/functions/v1/facebook-oauth-callback`,
         {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${session.access_token}`,
+            'Authorization': `Bearer ${session.access_token}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            code,
-            redirect_uri: `${window.location.origin}/auth/facebook/callback`,
-          }),
+          body: JSON.stringify({ code })
         }
       );
+
+      // Check if response is JSON
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('Non-JSON response:', text.substring(0, 200));
+        throw new Error('Server returned invalid response format');
+      }
+
+      const data = await response.json();
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to exchange code');
+        throw new Error(data.error || 'Failed to connect Facebook account');
       }
 
-      await response.json();
-
-      setMessage('Fetching your ad accounts...');
-
-      const accountsResponse = await fetch(
-        `${SUPABASE_URL}/functions/v1/facebook-get-accounts`,
-        {
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      if (!accountsResponse.ok) {
-        throw new Error('Failed to fetch ad accounts');
-      }
-
-      const accountsData = await accountsResponse.json();
-
-      sessionStorage.removeItem('fb_oauth_state');
-
+      console.log('Facebook connected successfully:', data);
+      
       setStatus('success');
-      setMessage(`Successfully connected! Found ${accountsData.accounts?.length || 0} ad accounts.`);
-      setTimeout(() => navigate('/dashboard'), 2000);
-    } catch (error: any) {
-      console.error('OAuth callback error:', error);
+      setMessage('Facebook account connected successfully!');
+      
+      // Redirect to dashboard after 1 second
+      setTimeout(() => {
+        navigate('/dashboard?facebook_connected=true');
+      }, 1000);
+
+    } catch (err: any) {
+      console.error('Facebook callback error:', err);
       setStatus('error');
-      setMessage(error.message || 'Failed to complete Facebook connection');
-      setTimeout(() => navigate('/settings'), 3000);
+      setMessage(err.message || 'Failed to connect Facebook account');
+      
+      // Redirect to home with error after 3 seconds
+      setTimeout(() => {
+        navigate(`/?error=${encodeURIComponent(err.message)}`);
+      }, 3000);
     }
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-6">
-      <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-12 text-center">
-        {status === 'loading' && <Loader2 className="w-16 h-16 text-blue-400 mx-auto mb-4 animate-spin" />}
-        {status === 'success' && <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />}
-        {status === 'error' && <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />}
-        <p className="text-xl text-white">{message}</p>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-white to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="text-center max-w-md mx-auto p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-xl">
+        {status === 'processing' && (
+          <>
+            <div className="relative mx-auto mb-6 w-16 h-16">
+              <div className="absolute inset-0 rounded-full border-4 border-purple-200 dark:border-purple-900"></div>
+              <div className="absolute inset-0 rounded-full border-4 border-t-purple-500 animate-spin"></div>
+            </div>
+            <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2">
+              Connecting Facebook
+            </h2>
+            <p className="text-gray-600 dark:text-gray-300">{message}</p>
+          </>
+        )}
+        
+        {status === 'success' && (
+          <>
+            <div className="text-6xl mb-4">✓</div>
+            <h2 className="text-xl font-bold text-green-600 mb-2">Success!</h2>
+            <p className="text-gray-600 dark:text-gray-300">{message}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+              Redirecting to dashboard...
+            </p>
+          </>
+        )}
+        
+        {status === 'error' && (
+          <>
+            <div className="text-6xl mb-4">✕</div>
+            <h2 className="text-xl font-bold text-red-600 mb-2">
+              Connection Failed
+            </h2>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">{message}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Redirecting to home page...
+            </p>
+          </>
+        )}
       </div>
     </div>
   );
