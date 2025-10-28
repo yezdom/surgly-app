@@ -13,32 +13,76 @@ export default function FacebookCallback() {
 
   async function handleCallback() {
     try {
-      // Get code from URL (Facebook redirected here with the code)
+      console.log('🔗 Facebook OAuth callback initiated');
+
+      // Check both query params and hash fragments
       const params = new URLSearchParams(window.location.search);
-      const code = params.get('code');
-      const error = params.get('error');
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
 
+      const code = params.get('code') || hashParams.get('code');
+      const error = params.get('error') || hashParams.get('error');
+      const errorDescription = params.get('error_description') || hashParams.get('error_description');
+
+      console.log('📋 OAuth params:', {
+        hasCode: !!code,
+        error,
+        errorDescription,
+        search: window.location.search,
+        hash: window.location.hash
+      });
+
+      // Handle error from Facebook
       if (error) {
-        throw new Error(`Facebook denied access: ${error}`);
+        console.error('❌ Facebook OAuth error:', error, errorDescription);
+        setStatus('error');
+
+        if (error === 'access_denied') {
+          setMessage('You denied access to Facebook. Please try again and authorize the app.');
+        } else {
+          setMessage(`Facebook authentication failed: ${errorDescription || error}`);
+        }
+
+        setTimeout(() => {
+          navigate('/login?error=oauth_failed');
+        }, 3000);
+        return;
       }
 
+      // Handle missing code
       if (!code) {
-        throw new Error('No authorization code received from Facebook');
+        console.error('❌ No authorization code received from Facebook');
+        setStatus('error');
+        setMessage('No authorization code received. Please try connecting again.');
+
+        setTimeout(() => {
+          navigate('/login?error=no_code');
+        }, 3000);
+        return;
       }
 
-      console.log('Got authorization code from Facebook');
+      console.log('✅ Authorization code received, exchanging for session...');
       setMessage('Exchanging authorization code...');
 
       // Get current user session (user must be logged in first)
       const { data: { session } } = await supabase.auth.getSession();
-      
+
       if (!session) {
-        throw new Error('Please log in first before connecting Facebook');
+        console.error('❌ No user session found');
+        setStatus('error');
+        setMessage('Please log in first before connecting Facebook.');
+
+        setTimeout(() => {
+          navigate('/login?message=login_required');
+        }, 2000);
+        return;
       }
+
+      console.log('✅ User session found:', session.user.email);
+      console.log('📡 Calling Edge Function to exchange code for token...');
 
       // Call Edge Function with the code
       const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-      
+
       const response = await fetch(
         `${SUPABASE_URL}/functions/v1/facebook-oauth-callback`,
         {
@@ -51,38 +95,50 @@ export default function FacebookCallback() {
         }
       );
 
+      console.log('📡 Edge Function response status:', response.status);
+
       // Check if response is JSON
       const contentType = response.headers.get('content-type');
+
       if (!contentType || !contentType.includes('application/json')) {
         const text = await response.text();
-        console.error('Non-JSON response:', text.substring(0, 200));
+        console.error('❌ Non-JSON response from Edge Function:', text.substring(0, 200));
+
+        // Check if it's an HTML redirect (common issue)
+        if (text.includes('<!DOCTYPE') || text.includes('<html')) {
+          throw new Error('Server returned HTML instead of JSON. Edge Function may not be deployed correctly.');
+        }
+
         throw new Error('Server returned invalid response format');
       }
 
       const data = await response.json();
+      console.log('📦 Edge Function response:', data);
 
       if (!response.ok) {
+        console.error('❌ Edge Function error:', data.error);
         throw new Error(data.error || 'Failed to connect Facebook account');
       }
 
-      console.log('Facebook connected successfully:', data);
-      
+      console.log('✅ Facebook account connected successfully!');
+      console.log('📊 Ad accounts:', data.ad_accounts?.length || 0);
+
       setStatus('success');
       setMessage('Facebook account connected successfully!');
-      
+
       // Redirect to dashboard after 1 second
       setTimeout(() => {
         navigate('/dashboard?facebook_connected=true');
       }, 1000);
 
     } catch (err: any) {
-      console.error('Facebook callback error:', err);
+      console.error('❌ Facebook callback handler error:', err);
       setStatus('error');
       setMessage(err.message || 'Failed to connect Facebook account');
-      
-      // Redirect to home with error after 3 seconds
+
+      // Redirect to login with error after 3 seconds
       setTimeout(() => {
-        navigate(`/?error=${encodeURIComponent(err.message)}`);
+        navigate(`/login?error=${encodeURIComponent(err.message || 'callback_failed')}`);
       }, 3000);
     }
   }
@@ -102,7 +158,7 @@ export default function FacebookCallback() {
             <p className="text-gray-600 dark:text-gray-300">{message}</p>
           </>
         )}
-        
+
         {status === 'success' && (
           <>
             <div className="text-6xl mb-4">✓</div>
@@ -113,7 +169,7 @@ export default function FacebookCallback() {
             </p>
           </>
         )}
-        
+
         {status === 'error' && (
           <>
             <div className="text-6xl mb-4">✕</div>
@@ -122,7 +178,7 @@ export default function FacebookCallback() {
             </h2>
             <p className="text-gray-600 dark:text-gray-300 mb-4">{message}</p>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Redirecting to home page...
+              Redirecting...
             </p>
           </>
         )}

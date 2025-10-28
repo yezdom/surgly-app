@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
 import { AlertCircle, Loader2, LogIn } from 'lucide-react';
 
 export default function Login() {
@@ -8,7 +9,6 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn } = useAuth();
   const navigate = useNavigate();
 
   async function handleSubmit(e: React.FormEvent) {
@@ -17,10 +17,50 @@ export default function Login() {
     setLoading(true);
 
     try {
-      await signIn(email, password);
+      console.log('🔐 Login attempt:', { email: email.trim() });
+      console.log('📡 Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
+      console.log('📊 Expected database: hiefmgtlazspyhspzbjl');
+
+      const trimmedEmail = email.trim();
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email: trimmedEmail,
+        password: password
+      });
+
+      if (signInError) {
+        console.error('❌ Login error:', signInError);
+
+        // Provide specific error messages
+        if (signInError.message.includes('Invalid login credentials')) {
+          setError('Invalid email or password. Please check your credentials and try again.');
+        } else if (signInError.message.includes('Email not confirmed')) {
+          setError('Please verify your email address before logging in. Check your inbox for a verification email.');
+        } else if (signInError.message.includes('too many requests') || signInError.message.includes('rate limit')) {
+          setError('Too many login attempts. Please wait a few minutes before trying again.');
+        } else if (signInError.message.includes('network') || signInError.message.includes('fetch')) {
+          setError('Network error. Please check your internet connection and try again.');
+        } else {
+          setError(`Login failed: ${signInError.message}`);
+        }
+        setLoading(false);
+        return;
+      }
+
+      if (!data.user) {
+        console.error('❌ No user data returned');
+        setError('Authentication failed. Please try again.');
+        setLoading(false);
+        return;
+      }
+
+      console.log('✅ Login successful:', data.user.email);
+      console.log('👤 User ID:', data.user.id);
+
+      // Navigate to dashboard
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.message || 'Failed to sign in');
+      console.error('❌ Unexpected error during login:', err);
+      setError(err.message || 'An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -53,8 +93,10 @@ export default function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={loading}
+                className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
                 placeholder="you@example.com"
+                autoComplete="email"
               />
             </div>
 
@@ -65,8 +107,10 @@ export default function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={loading}
+                className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
                 placeholder="••••••••"
+                autoComplete="current-password"
               />
             </div>
 
