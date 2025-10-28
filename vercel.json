@@ -1,0 +1,11 @@
+{
+  "buildCommand": "npm install && npm run build",
+  "framework": "vite",
+  "installCommand": "npm install --legacy-peer-deps",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+To create the 1024x1024 app icon for Facebook Developer Console:
+
+1. Go to Canva.com
+2. Create custom size: 1024x1024 pixels
+3. Add gradient background: #4F46E5 (top-left) to #7C3AED (bottom-right)
+4. Add stethoscope emoji 🩺 (large, centered, approximately 512x512 pixels)
+5. Add 'Surgly' text below in white, bold font (size ~120px)
+6. Download as PNG
+7. Upload to Facebook Developer Console > Settings > App Icon
+
+Alternative: Use any design tool (Figma, Photoshop, AI image generator)
+
+Required specifications:
+- Size: Exactly 1024x1024 pixels
+- Format: PNG
+- Background: Gradient from #4F46E5 to #7C3AED
+- Center icon: Medical stethoscope or medical cross
+- Text: "Surgly" in white below icon
