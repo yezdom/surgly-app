@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, Zap, Shield, TrendingUp, Sun, Moon } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import Logo from './Logo';
 
 export default function LandingPage() {
   const { theme, toggleTheme } = useTheme();
@@ -8,7 +9,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 dark:from-slate-900 dark:via-purple-900 dark:to-slate-900 bg-light-secondary transition-colors duration-300">
       <nav className="container mx-auto px-6 py-6 flex items-center justify-between">
-        <div className="text-3xl font-extrabold text-white dark:text-white text-text-light-primary">SURGLY</div>
+        <Logo variant="header" linkTo="/" className="text-white" />
         <div className="flex items-center gap-4">
           <button
             onClick={toggleTheme}
@@ -114,7 +115,7 @@ export default function LandingPage() {
       <footer className="container mx-auto px-6 py-12 border-t border-white/10">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           <div>
-            <div className="text-2xl font-bold text-white mb-4">SURGLY</div>
+            <Logo variant="footer" linkTo="/" className="mb-4" />
             <p className="text-gray-400">AI-powered Facebook ad optimization platform.</p>
           </div>
           <div>

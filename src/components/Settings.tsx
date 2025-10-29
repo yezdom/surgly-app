@@ -1,10 +1,39 @@
 import DashboardLayout from './DashboardLayout';
 import FacebookAuthButton from './FacebookAuthButton';
 import { useAuth } from '../contexts/AuthContext';
-import { Settings as SettingsIcon, User, Shield, Bell } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+import { useState, useEffect } from 'react';
+import { Settings as SettingsIcon, User, Shield, CreditCard, Crown, Lock } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function Settings() {
   const { user } = useAuth();
+  const [subscriptionTier, setSubscriptionTier] = useState('Free');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadUserData();
+  }, [user]);
+
+  async function loadUserData() {
+    if (!user) return;
+
+    try {
+      const { data } = await supabase
+        .from('users')
+        .select('subscription_tier')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (data) {
+        setSubscriptionTier(data.subscription_tier || 'Free');
+      }
+    } catch (error) {
+      console.error('Failed to load user data:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <DashboardLayout>
@@ -35,6 +64,45 @@ export default function Settings() {
                   className="w-full px-4 py-2 bg-light-secondary dark:bg-dark-tertiary border border-border-light dark:border-border-dark rounded-lg text-text-light-primary dark:text-text-dark-primary"
                 />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-text-light-secondary dark:text-text-dark-secondary mb-1">
+                  User ID
+                </label>
+                <input
+                  type="text"
+                  value={user?.id || ''}
+                  disabled
+                  className="w-full px-4 py-2 bg-light-secondary dark:bg-dark-tertiary border border-border-light dark:border-border-dark rounded-lg text-text-light-primary dark:text-text-dark-primary text-xs font-mono"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6">
+            <h2 className="text-xl font-bold text-text-light-primary dark:text-text-dark-primary mb-4 flex items-center gap-2">
+              <Crown className="w-6 h-6 text-yellow-500" />
+              Subscription Plan
+            </h2>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-2xl font-bold text-text-light-primary dark:text-text-dark-primary">
+                  {loading ? 'Loading...' : subscriptionTier}
+                </p>
+                <p className="text-sm text-text-light-secondary dark:text-text-dark-secondary">
+                  Current plan
+                </p>
+              </div>
+              <Link
+                to="/pricing"
+                className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:shadow-lg transition font-medium"
+              >
+                Upgrade Plan
+              </Link>
+            </div>
+            <div className="text-sm text-text-light-secondary dark:text-text-dark-secondary">
+              {subscriptionTier === 'Free' && 'Upgrade to Pro or Enterprise for unlimited features'}
+              {subscriptionTier === 'Pro' && 'You have access to professional features'}
+              {subscriptionTier === 'Enterprise' && 'You have access to all features'}
             </div>
           </div>
 
@@ -47,33 +115,6 @@ export default function Settings() {
               Connect your Facebook account to access your ad campaigns
             </p>
             <FacebookAuthButton />
-          </div>
-
-          <div className="bg-light-primary dark:bg-dark-secondary border border-border-light dark:border-border-dark rounded-xl p-6">
-            <h2 className="text-xl font-bold text-text-light-primary dark:text-text-dark-primary mb-4 flex items-center gap-2">
-              <Bell className="w-6 h-6" />
-              Notifications
-            </h2>
-            <div className="space-y-3">
-              <label className="flex items-center gap-3">
-                <input type="checkbox" className="w-5 h-5" defaultChecked />
-                <span className="text-text-light-primary dark:text-text-dark-primary">
-                  Email notifications
-                </span>
-              </label>
-              <label className="flex items-center gap-3">
-                <input type="checkbox" className="w-5 h-5" defaultChecked />
-                <span className="text-text-light-primary dark:text-text-dark-primary">
-                  Budget alerts
-                </span>
-              </label>
-              <label className="flex items-center gap-3">
-                <input type="checkbox" className="w-5 h-5" />
-                <span className="text-text-light-primary dark:text-text-dark-primary">
-                  Performance reports
-                </span>
-              </label>
-            </div>
           </div>
         </div>
       </div>

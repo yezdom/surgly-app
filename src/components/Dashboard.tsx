@@ -172,31 +172,33 @@ export default function Dashboard() {
           </p>
         </div>
 
-        <div className="mb-12">
-          <h2 className="text-2xl font-bold text-text-light-primary dark:text-text-dark-primary mb-6">
+        <div className="mb-8">
+          <h2 className="text-xl font-bold text-text-light-primary dark:text-text-dark-primary mb-4">
             Upcoming Ad Platforms
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {comingSoonPlatforms.map((platform) => (
               <div
                 key={platform.name}
-                className="group bg-light-primary dark:bg-dark-secondary border border-border-light dark:border-border-dark rounded-xl p-6 relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer"
+                className="group bg-light-primary dark:bg-dark-secondary border border-border-light dark:border-border-dark rounded-lg p-4 relative overflow-hidden transition-all duration-200 hover:shadow-lg hover:scale-102 cursor-pointer"
               >
-                <div className="absolute top-4 right-4 px-3 py-1 bg-gradient-to-r from-pink-500 to-orange-500 text-white text-xs font-bold rounded-full shadow-lg">
+                <div className="absolute top-2 right-2 px-2 py-0.5 bg-gradient-to-r from-pink-500 to-orange-500 text-white text-[10px] font-bold rounded-full">
                   COMING SOON
                 </div>
-                <div className="flex flex-col items-center text-center">
-                  <div className={`flex items-center justify-center w-20 h-20 rounded-xl bg-gradient-to-br ${platform.color} mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                    <span className="text-4xl">{platform.icon}</span>
+                <div className="flex items-center gap-3">
+                  <div className={`flex items-center justify-center w-12 h-12 rounded-lg bg-gradient-to-br ${platform.color} flex-shrink-0`}>
+                    <span className="text-2xl">{platform.icon}</span>
                   </div>
-                  <h3 className="text-xl font-bold text-text-light-primary dark:text-text-dark-primary mb-2">
-                    {platform.name}
-                  </h3>
-                  <p className="text-sm text-text-light-secondary dark:text-text-dark-secondary">
-                    {platform.description}
-                  </p>
+                  <div className="flex-1 pr-16">
+                    <h3 className="text-base font-bold text-text-light-primary dark:text-text-dark-primary mb-1">
+                      {platform.name}
+                    </h3>
+                    <p className="text-xs text-text-light-secondary dark:text-text-dark-secondary line-clamp-2">
+                      {platform.description}
+                    </p>
+                  </div>
                 </div>
-                <div className={`absolute inset-0 ${platform.bgColor} opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none`} />
+                <div className={`absolute inset-0 ${platform.bgColor} opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none rounded-lg`} />
               </div>
             ))}
           </div>
