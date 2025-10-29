@@ -21,12 +21,15 @@ export interface AdValidationResult {
 
 export interface LandingPageAuditResult {
   suggestedAdCopy: {
+    primaryText: string;
     headline: string;
-    body: string;
+    description: string;
     cta: string;
   };
   emotionalHooks: string[];
+  emotionalAppeal: number;
   clarityScore: number;
+  visualCohesion: string;
   complianceLevel: 'Excellent' | 'Good' | 'Fair' | 'Poor';
   conversionReadiness: number;
   uniqueSellingPoints: string[];
@@ -148,7 +151,8 @@ Provide a detailed evaluation in the following JSON format (respond ONLY with va
 }
 
 export async function auditLandingPage(
-  landingPageText: string
+  landingPageText: string,
+  hasImages: boolean = false
 ): Promise<LandingPageAuditResult> {
   const prompt = `You are Dr. Surgly, an expert AI Ads Doctor specializing in Facebook advertising.
 Analyze this landing page and generate a realistic pre-launch ad performance evaluation.
@@ -156,22 +160,27 @@ Analyze this landing page and generate a realistic pre-launch ad performance eva
 LANDING PAGE CONTENT:
 ${landingPageText}
 
-Provide a comprehensive analysis in the following JSON format (respond ONLY with valid JSON):
+${hasImages ? 'NOTE: Visual content (images) has been extracted from this page.' : ''}
+
+Provide a structured Facebook-style ad concept and comprehensive analysis in the following JSON format (respond ONLY with valid JSON):
 {
   "emotionalHooks": ["<hook1>", "<hook2>", "<hook3>"],
+  "emotionalAppeal": <number 0-100>,
   "clarityScore": <number 0-100>,
+  "visualCohesion": "<comment on extracted images and visual alignment>",
   "uniqueSellingPoints": ["<usp1>", "<usp2>", "<usp3>"],
   "conversionReadiness": <number 0-100>,
   "complianceLevel": "<Excellent|Good|Fair|Poor>",
   "missingElements": ["<element1>", "<element2>"],
   "suggestedAdCopy": {
-    "headline": "<compelling headline>",
-    "body": "<engaging body text>",
-    "cta": "<strong call to action>"
+    "primaryText": "<emotion-driven 2-3 sentences>",
+    "headline": "<concise compelling headline>",
+    "description": "<short subtext>",
+    "cta": "<recommended call to action>"
   },
   "predictedEngagement": <number 0-100>,
   "recommendations": ["<recommendation1>", "<recommendation2>", "<recommendation3>"],
-  "drSurglyPrescription": "<1-2 actionable sentences>"
+  "drSurglyPrescription": "<1-2 actionable sentences with motivational summary>"
 }`;
 
   try {
@@ -186,9 +195,11 @@ Provide a comprehensive analysis in the following JSON format (respond ONLY with
     const result = JSON.parse(content);
 
     return {
-      suggestedAdCopy: result.suggestedAdCopy || { headline: '', body: '', cta: '' },
+      suggestedAdCopy: result.suggestedAdCopy || { primaryText: '', headline: '', description: '', cta: '' },
       emotionalHooks: result.emotionalHooks || [],
+      emotionalAppeal: result.emotionalAppeal || 0,
       clarityScore: result.clarityScore || 0,
+      visualCohesion: result.visualCohesion || 'No visual assessment available',
       complianceLevel: result.complianceLevel || 'Good',
       conversionReadiness: result.conversionReadiness || 0,
       uniqueSellingPoints: result.uniqueSellingPoints || [],

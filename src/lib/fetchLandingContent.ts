@@ -5,6 +5,8 @@ export interface LandingPageExtraction {
   metaDescription: string;
   headings: string[];
   summary: string;
+  images: string[];
+  ogImage?: string;
 }
 
 export async function fetchLandingContent(url: string): Promise<LandingPageExtraction> {
@@ -26,6 +28,10 @@ export async function fetchLandingContent(url: string): Promise<LandingPageExtra
     // Extract all headings for structure
     const headings = extractAllHeadings(html);
 
+    // Extract images from the page
+    const images = extractImages(html);
+    const ogImage = extractMetaTag(html, 'og:image') || extractMetaTag(html, 'twitter:image');
+
     // Clean and extract visible text content
     const cleanText = cleanHTML(html);
 
@@ -41,7 +47,7 @@ export async function fetchLandingContent(url: string): Promise<LandingPageExtra
     const summary = summaryParts.join('\n\n');
 
     console.log('✅ Fetched landing content length:', summary.length);
-    console.log('📊 Extracted:', { title, h1, headingsCount: headings.length });
+    console.log('📊 Extracted:', { title, h1, headingsCount: headings.length, imagesCount: images.length });
 
     return {
       fullText: cleanText,
@@ -50,6 +56,8 @@ export async function fetchLandingContent(url: string): Promise<LandingPageExtra
       metaDescription,
       headings,
       summary,
+      images,
+      ogImage,
     };
   } catch (error) {
     console.error('❌ Error fetching landing page:', error);
@@ -62,6 +70,8 @@ export async function fetchLandingContent(url: string): Promise<LandingPageExtra
       metaDescription: '',
       headings: [],
       summary: 'Unable to extract readable content. Please check the URL and try again.',
+      images: [],
+      ogImage: undefined,
     };
   }
 }
@@ -263,4 +273,35 @@ function extractCTAButtons(html: string): string[] {
   }
 
   return [...new Set(ctas)].slice(0, 5);
+}
+
+function extractImages(html: string): string[] {
+  const images: string[] = [];
+
+  // Extract img src attributes with full URLs (https)
+  const imgPattern = /<img[^>]+src=["'](https?:\/\/[^"']+\.(?:jpg|jpeg|png|webp|gif))["']/gi;
+  let match;
+
+  while ((match = imgPattern.exec(html)) !== null) {
+    const url = match[1];
+    // Filter out very small images (likely icons or tracking pixels)
+    if (!url.includes('1x1') && !url.includes('pixel') && !url.includes('icon')) {
+      images.push(url);
+    }
+  }
+
+  // Also check for srcset attributes
+  const srcsetPattern = /<img[^>]+srcset=["']([^"']+)["']/gi;
+
+  while ((match = srcsetPattern.exec(html)) !== null) {
+    const srcset = match[1];
+    // Extract the first URL from srcset
+    const urlMatch = srcset.match(/(https?:\/\/[^\s]+\.(?:jpg|jpeg|png|webp|gif))/i);
+    if (urlMatch) {
+      images.push(urlMatch[1]);
+    }
+  }
+
+  // Remove duplicates and limit to first 8 images
+  return [...new Set(images)].slice(0, 8);
 }

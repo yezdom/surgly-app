@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import DashboardLayout from './DashboardLayout';
+import FacebookAdPreview from './FacebookAdPreview';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { getAdAccounts, getCampaigns } from '../lib/facebookService';
@@ -32,6 +33,8 @@ import {
   Target,
   Download,
   Lock,
+  Copy,
+  Image as ImageIcon,
 } from 'lucide-react';
 
 interface ValidationCheck {
@@ -259,8 +262,8 @@ export default function Validator() {
       const extraction = await fetchLandingContent(landingUrl);
       setLandingExtraction(extraction);
 
-      // Analyze with AI
-      const result = await auditLandingPage(extraction.summary);
+      // Analyze with AI (pass hasImages flag)
+      const result = await auditLandingPage(extraction.summary, extraction.images.length > 0);
       setLandingResult(result);
     } catch (error: any) {
       alert(error.message || 'Failed to validate landing page');
@@ -783,6 +786,37 @@ export default function Validator() {
 
                 {landingResult && (
                   <div className="space-y-6 mt-8">
+                    {/* Facebook Ad Preview */}
+                    <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-xl p-6">
+                      <div className="flex items-center gap-3 mb-6">
+                        <ImageIcon className="w-6 h-6 text-blue-500" />
+                        <h3 className="text-2xl font-bold text-text-light-primary dark:text-text-dark-primary">
+                          Facebook Ad Preview
+                        </h3>
+                      </div>
+                      <FacebookAdPreview
+                        primaryText={landingResult.suggestedAdCopy.primaryText}
+                        headline={landingResult.suggestedAdCopy.headline}
+                        description={landingResult.suggestedAdCopy.description}
+                        cta={landingResult.suggestedAdCopy.cta}
+                        images={landingExtraction?.images || []}
+                        ogImage={landingExtraction?.ogImage}
+                      />
+                      <div className="mt-4 flex gap-3">
+                        <button
+                          onClick={() => {
+                            const adText = `Primary Text:\n${landingResult.suggestedAdCopy.primaryText}\n\nHeadline: ${landingResult.suggestedAdCopy.headline}\n\nDescription: ${landingResult.suggestedAdCopy.description}\n\nCTA: ${landingResult.suggestedAdCopy.cta}`;
+                            navigator.clipboard.writeText(adText);
+                            alert('Ad copy copied to clipboard!');
+                          }}
+                          className="px-4 py-2 bg-light-secondary dark:bg-dark-tertiary text-text-light-primary dark:text-text-dark-primary rounded-lg hover:opacity-80 transition font-medium flex items-center gap-2"
+                        >
+                          <Copy className="w-4 h-4" />
+                          Copy Ad Copy
+                        </button>
+                      </div>
+                    </div>
+
                     {landingResult.emotionalHooks && landingResult.emotionalHooks.length > 0 && (
                       <div className="bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20 rounded-xl p-6">
                         <h3 className="text-xl font-bold text-text-light-primary dark:text-text-dark-primary mb-4">
@@ -817,76 +851,59 @@ export default function Validator() {
                       </div>
                     )}
 
-                    <div className="bg-gradient-to-r from-green-500/10 to-teal-500/10 border border-green-500/20 rounded-xl p-6">
-                      <h3 className="text-xl font-bold text-text-light-primary dark:text-text-dark-primary mb-4">
-                        💡 Suggested Ad Copy
+                    {/* AI Evaluation Metrics */}
+                    <div className="bg-light-primary dark:bg-dark-secondary border border-border-light dark:border-border-dark rounded-xl p-6">
+                      <h3 className="text-xl font-bold text-text-light-primary dark:text-text-dark-primary mb-6">
+                        ✅ AI Evaluation Metrics
                       </h3>
-                      <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div>
-                          <p className="text-sm font-semibold text-text-light-secondary dark:text-text-dark-secondary mb-2">
-                            Headline:
-                          </p>
-                          <p className="text-text-light-primary dark:text-text-dark-primary font-medium">
-                            {landingResult.suggestedAdCopy.headline}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold text-text-light-secondary dark:text-text-dark-secondary mb-2">
-                            Body:
-                          </p>
-                          <p className="text-text-light-primary dark:text-text-dark-primary">
-                            {landingResult.suggestedAdCopy.body}
-                          </p>
-                        </div>
-                        {landingResult.suggestedAdCopy.cta && (
-                          <div>
-                            <p className="text-sm font-semibold text-text-light-secondary dark:text-text-dark-secondary mb-2">
-                              Call-to-Action:
-                            </p>
-                            <p className="text-text-light-primary dark:text-text-dark-primary font-bold">
-                              {landingResult.suggestedAdCopy.cta}
-                            </p>
+                          <h4 className="text-sm font-semibold text-text-light-secondary dark:text-text-dark-secondary mb-2">
+                            Emotional Appeal
+                          </h4>
+                          <div className="text-3xl font-bold text-orange-500">
+                            {landingResult.emotionalAppeal}%
                           </div>
-                        )}
-                      </div>
-                    </div>
+                        </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                      <div className="bg-light-primary dark:bg-dark-secondary border border-border-light dark:border-border-dark rounded-xl p-6">
-                        <h3 className="font-bold text-text-light-primary dark:text-text-dark-primary mb-2">
-                          Clarity Score
-                        </h3>
-                        <div className="text-3xl font-bold text-blue-500">
-                          {landingResult.clarityScore}%
+                        <div>
+                          <h4 className="text-sm font-semibold text-text-light-secondary dark:text-text-dark-secondary mb-2">
+                            Clarity Score
+                          </h4>
+                          <div className="text-3xl font-bold text-blue-500">
+                            {landingResult.clarityScore}%
+                          </div>
+                        </div>
+
+                        <div>
+                          <h4 className="text-sm font-semibold text-text-light-secondary dark:text-text-dark-secondary mb-2">
+                            Policy Compliance
+                          </h4>
+                          <div className="text-3xl font-bold text-green-500">
+                            {landingResult.complianceLevel}
+                          </div>
+                        </div>
+
+                        <div>
+                          <h4 className="text-sm font-semibold text-text-light-secondary dark:text-text-dark-secondary mb-2">
+                            Predicted Engagement
+                          </h4>
+                          <div className="text-3xl font-bold text-purple-500">
+                            {landingResult.predictedEngagement}%
+                          </div>
                         </div>
                       </div>
 
-                      <div className="bg-light-primary dark:bg-dark-secondary border border-border-light dark:border-border-dark rounded-xl p-6">
-                        <h3 className="font-bold text-text-light-primary dark:text-text-dark-primary mb-2">
-                          Compliance
-                        </h3>
-                        <div className="text-3xl font-bold text-green-500">
-                          {landingResult.complianceLevel}
+                      {landingResult.visualCohesion && (
+                        <div className="mt-6 p-4 bg-light-secondary dark:bg-dark-tertiary rounded-lg">
+                          <h4 className="text-sm font-semibold text-text-light-secondary dark:text-text-dark-secondary mb-2">
+                            Visual Match Assessment:
+                          </h4>
+                          <p className="text-text-light-primary dark:text-text-dark-primary">
+                            {landingResult.visualCohesion}
+                          </p>
                         </div>
-                      </div>
-
-                      <div className="bg-light-primary dark:bg-dark-secondary border border-border-light dark:border-border-dark rounded-xl p-6">
-                        <h3 className="font-bold text-text-light-primary dark:text-text-dark-primary mb-2">
-                          Conversion Ready
-                        </h3>
-                        <div className="text-3xl font-bold text-purple-500">
-                          {landingResult.conversionReadiness}%
-                        </div>
-                      </div>
-
-                      <div className="bg-light-primary dark:bg-dark-secondary border border-border-light dark:border-border-dark rounded-xl p-6">
-                        <h3 className="font-bold text-text-light-primary dark:text-text-dark-primary mb-2">
-                          Engagement
-                        </h3>
-                        <div className="text-3xl font-bold text-orange-500">
-                          {landingResult.predictedEngagement}%
-                        </div>
-                      </div>
+                      )}
                     </div>
 
                     {landingResult.missingElements && landingResult.missingElements.length > 0 && (
