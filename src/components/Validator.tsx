@@ -13,6 +13,7 @@ import {
   AdValidationResult,
   LandingPageAuditResult,
 } from '../lib/validationService';
+import { fetchLandingContent, LandingPageExtraction } from '../lib/fetchLandingContent';
 import {
   CheckCircle,
   XCircle,
@@ -82,6 +83,7 @@ export default function Validator() {
   const [landingUrl, setLandingUrl] = useState('');
   const [landingValidating, setLandingValidating] = useState(false);
   const [landingResult, setLandingResult] = useState<LandingPageAuditResult | null>(null);
+  const [landingExtraction, setLandingExtraction] = useState<LandingPageExtraction | null>(null);
 
   // Manual validation
   const [manualAdCopy, setManualAdCopy] = useState('');
@@ -250,10 +252,15 @@ export default function Validator() {
 
     setLandingValidating(true);
     setLandingResult(null);
+    setLandingExtraction(null);
 
     try {
-      const landingPageText = await fetchLandingPageText(landingUrl);
-      const result = await auditLandingPage(landingPageText);
+      // Fetch and extract landing page content
+      const extraction = await fetchLandingContent(landingUrl);
+      setLandingExtraction(extraction);
+
+      // Analyze with AI
+      const result = await auditLandingPage(extraction.summary);
       setLandingResult(result);
     } catch (error: any) {
       alert(error.message || 'Failed to validate landing page');
@@ -736,11 +743,83 @@ export default function Validator() {
                   </button>
                 </div>
 
+                {landingExtraction && (
+                  <div className="bg-light-secondary dark:bg-dark-tertiary border border-border-light dark:border-border-dark rounded-xl p-6 mt-6">
+                    <h3 className="text-lg font-bold text-text-light-primary dark:text-text-dark-primary mb-3">
+                      📄 Extracted Content Preview
+                    </h3>
+                    <div className="space-y-3">
+                      {landingExtraction.title && (
+                        <div>
+                          <p className="text-xs font-semibold text-text-light-secondary dark:text-text-dark-secondary mb-1">
+                            Page Title:
+                          </p>
+                          <p className="text-sm text-text-light-primary dark:text-text-dark-primary">
+                            {landingExtraction.title}
+                          </p>
+                        </div>
+                      )}
+                      {landingExtraction.h1 && (
+                        <div>
+                          <p className="text-xs font-semibold text-text-light-secondary dark:text-text-dark-secondary mb-1">
+                            Main Heading:
+                          </p>
+                          <p className="text-sm text-text-light-primary dark:text-text-dark-primary">
+                            {landingExtraction.h1}
+                          </p>
+                        </div>
+                      )}
+                      <div>
+                        <p className="text-xs font-semibold text-text-light-secondary dark:text-text-dark-secondary mb-1">
+                          Content Summary (first 300 chars):
+                        </p>
+                        <p className="text-sm text-text-light-primary dark:text-text-dark-primary italic">
+                          {landingExtraction.fullText.slice(0, 300)}...
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {landingResult && (
                   <div className="space-y-6 mt-8">
+                    {landingResult.emotionalHooks && landingResult.emotionalHooks.length > 0 && (
+                      <div className="bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20 rounded-xl p-6">
+                        <h3 className="text-xl font-bold text-text-light-primary dark:text-text-dark-primary mb-4">
+                          🎯 Detected Emotional Hooks
+                        </h3>
+                        <div className="space-y-2">
+                          {landingResult.emotionalHooks.map((hook, index) => (
+                            <div key={index} className="flex items-center gap-2">
+                              <span className="text-orange-500">•</span>
+                              <p className="text-text-light-primary dark:text-text-dark-primary">{hook}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {landingResult.uniqueSellingPoints && landingResult.uniqueSellingPoints.length > 0 && (
+                      <div className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/20 rounded-xl p-6">
+                        <h3 className="text-xl font-bold text-text-light-primary dark:text-text-dark-primary mb-4">
+                          ⭐ Top Unique Selling Points
+                        </h3>
+                        <div className="space-y-2">
+                          {landingResult.uniqueSellingPoints.map((usp, index) => (
+                            <div key={index} className="flex items-start gap-3">
+                              <div className="mt-1 w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm font-bold flex-shrink-0">
+                                {index + 1}
+                              </div>
+                              <p className="text-text-light-primary dark:text-text-dark-primary">{usp}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     <div className="bg-gradient-to-r from-green-500/10 to-teal-500/10 border border-green-500/20 rounded-xl p-6">
                       <h3 className="text-xl font-bold text-text-light-primary dark:text-text-dark-primary mb-4">
-                        Suggested Ad Copy
+                        💡 Suggested Ad Copy
                       </h3>
                       <div className="space-y-4">
                         <div>
@@ -759,10 +838,20 @@ export default function Validator() {
                             {landingResult.suggestedAdCopy.body}
                           </p>
                         </div>
+                        {landingResult.suggestedAdCopy.cta && (
+                          <div>
+                            <p className="text-sm font-semibold text-text-light-secondary dark:text-text-dark-secondary mb-2">
+                              Call-to-Action:
+                            </p>
+                            <p className="text-text-light-primary dark:text-text-dark-primary font-bold">
+                              {landingResult.suggestedAdCopy.cta}
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                       <div className="bg-light-primary dark:bg-dark-secondary border border-border-light dark:border-border-dark rounded-xl p-6">
                         <h3 className="font-bold text-text-light-primary dark:text-text-dark-primary mb-2">
                           Clarity Score
@@ -789,11 +878,36 @@ export default function Validator() {
                           {landingResult.conversionReadiness}%
                         </div>
                       </div>
+
+                      <div className="bg-light-primary dark:bg-dark-secondary border border-border-light dark:border-border-dark rounded-xl p-6">
+                        <h3 className="font-bold text-text-light-primary dark:text-text-dark-primary mb-2">
+                          Engagement
+                        </h3>
+                        <div className="text-3xl font-bold text-orange-500">
+                          {landingResult.predictedEngagement}%
+                        </div>
+                      </div>
                     </div>
+
+                    {landingResult.missingElements && landingResult.missingElements.length > 0 && (
+                      <div className="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/20 rounded-xl p-6">
+                        <h3 className="text-xl font-bold text-text-light-primary dark:text-text-dark-primary mb-4">
+                          ⚠️ Missing or Weak Elements
+                        </h3>
+                        <div className="space-y-2">
+                          {landingResult.missingElements.map((element, index) => (
+                            <div key={index} className="flex items-center gap-2">
+                              <span className="text-yellow-500">⚠️</span>
+                              <p className="text-text-light-primary dark:text-text-dark-primary">{element}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     <div className="bg-light-primary dark:bg-dark-secondary border border-border-light dark:border-border-dark rounded-xl p-6">
                       <h3 className="text-lg font-bold text-text-light-primary dark:text-text-dark-primary mb-4">
-                        Recommendations
+                        📋 Recommendations
                       </h3>
                       <div className="space-y-3">
                         {landingResult.recommendations.map((rec, index) => (
@@ -806,6 +920,20 @@ export default function Validator() {
                         ))}
                       </div>
                     </div>
+
+                    {landingResult.drSurglyPrescription && (
+                      <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-xl p-6">
+                        <div className="flex items-center gap-3 mb-4">
+                          <Sparkles className="w-6 h-6 text-blue-500" />
+                          <h3 className="text-xl font-bold text-text-light-primary dark:text-text-dark-primary">
+                            🧠 Dr. Surgly's Prescription
+                          </h3>
+                        </div>
+                        <p className="text-text-light-primary dark:text-text-dark-primary text-lg">
+                          {landingResult.drSurglyPrescription}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

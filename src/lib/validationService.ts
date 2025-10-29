@@ -23,11 +23,17 @@ export interface LandingPageAuditResult {
   suggestedAdCopy: {
     headline: string;
     body: string;
+    cta: string;
   };
+  emotionalHooks: string[];
   clarityScore: number;
   complianceLevel: 'Excellent' | 'Good' | 'Fair' | 'Poor';
   conversionReadiness: number;
+  uniqueSellingPoints: string[];
+  missingElements: string[];
   recommendations: string[];
+  predictedEngagement: number;
+  drSurglyPrescription: string;
 }
 
 export async function validateAdWithLandingPage(
@@ -144,28 +150,28 @@ Provide a detailed evaluation in the following JSON format (respond ONLY with va
 export async function auditLandingPage(
   landingPageText: string
 ): Promise<LandingPageAuditResult> {
-  const prompt = `You are an AI Ad Consultant.
-Generate a simulated Facebook ad headline and body that could effectively promote this landing page:
+  const prompt = `You are Dr. Surgly, an expert AI Ads Doctor specializing in Facebook advertising.
+Analyze this landing page and generate a realistic pre-launch ad performance evaluation.
 
-Landing Page Text:
-"${landingPageText.slice(0, 2000)}"
+LANDING PAGE CONTENT:
+${landingPageText}
 
-Then evaluate:
-1. Clarity of CTA
-2. Compliance risk
-3. Predicted engagement
-4. Suggested improvements
-
-Provide your analysis in the following JSON format (respond ONLY with valid JSON):
+Provide a comprehensive analysis in the following JSON format (respond ONLY with valid JSON):
 {
+  "emotionalHooks": ["<hook1>", "<hook2>", "<hook3>"],
+  "clarityScore": <number 0-100>,
+  "uniqueSellingPoints": ["<usp1>", "<usp2>", "<usp3>"],
+  "conversionReadiness": <number 0-100>,
+  "complianceLevel": "<Excellent|Good|Fair|Poor>",
+  "missingElements": ["<element1>", "<element2>"],
   "suggestedAdCopy": {
     "headline": "<compelling headline>",
-    "body": "<engaging body text>"
+    "body": "<engaging body text>",
+    "cta": "<strong call to action>"
   },
-  "clarityScore": <number 0-100>,
-  "complianceLevel": "<Excellent|Good|Fair|Poor>",
-  "conversionReadiness": <number 0-100>,
-  "recommendations": ["<recommendation1>", "<recommendation2>", "<recommendation3>"]
+  "predictedEngagement": <number 0-100>,
+  "recommendations": ["<recommendation1>", "<recommendation2>", "<recommendation3>"],
+  "drSurglyPrescription": "<1-2 actionable sentences>"
 }`;
 
   try {
@@ -180,11 +186,16 @@ Provide your analysis in the following JSON format (respond ONLY with valid JSON
     const result = JSON.parse(content);
 
     return {
-      suggestedAdCopy: result.suggestedAdCopy || { headline: '', body: '' },
+      suggestedAdCopy: result.suggestedAdCopy || { headline: '', body: '', cta: '' },
+      emotionalHooks: result.emotionalHooks || [],
       clarityScore: result.clarityScore || 0,
       complianceLevel: result.complianceLevel || 'Good',
       conversionReadiness: result.conversionReadiness || 0,
+      uniqueSellingPoints: result.uniqueSellingPoints || [],
+      missingElements: result.missingElements || [],
       recommendations: result.recommendations || [],
+      predictedEngagement: result.predictedEngagement || 0,
+      drSurglyPrescription: result.drSurglyPrescription || '',
     };
   } catch (error) {
     console.error('Landing page audit error:', error);
@@ -192,21 +203,11 @@ Provide your analysis in the following JSON format (respond ONLY with valid JSON
   }
 }
 
+// Legacy function - kept for backwards compatibility
 export async function fetchLandingPageText(url: string): Promise<string> {
-  try {
-    // In production, this should go through a backend proxy to avoid CORS
-    const response = await fetch(url);
-    const html = await response.text();
-
-    // Extract text content (simplified - in production use a proper HTML parser)
-    const doc = new DOMParser().parseFromString(html, 'text/html');
-    const text = doc.body?.textContent || '';
-
-    return text.slice(0, 2000);
-  } catch (error) {
-    console.error('Failed to fetch landing page:', error);
-    throw new Error('Failed to fetch landing page content. Please check the URL.');
-  }
+  const { fetchLandingContent } = await import('./fetchLandingContent');
+  const extraction = await fetchLandingContent(url);
+  return extraction.summary;
 }
 
 export async function generateImprovedAdCopy(
