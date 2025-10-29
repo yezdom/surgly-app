@@ -41,20 +41,23 @@ export default function Footer() {
           </div>
 
           <div>
-            <h4 className="font-bold text-white mb-4">Product</h4>
+            <h4 className="font-bold text-white mb-4">Quick Links</h4>
             <div className="space-y-2">
               <Link to="/" className="block text-gray-400 hover:text-white transition text-sm">
                 Home
               </Link>
-              <Link to="/dashboard" className="block text-gray-400 hover:text-white transition text-sm">
-                Dashboard
-              </Link>
+              <a href="/#features" className="block text-gray-400 hover:text-white transition text-sm">
+                Features
+              </a>
               <Link to="/pricing" className="block text-gray-400 hover:text-white transition text-sm">
                 Pricing
               </Link>
               <Link to="/about" className="block text-gray-400 hover:text-white transition text-sm">
                 About
               </Link>
+              <a href="/#faq" className="block text-gray-400 hover:text-white transition text-sm">
+                FAQs
+              </a>
             </div>
           </div>
 
@@ -67,11 +70,11 @@ export default function Footer() {
               <Link to="/privacy" className="block text-gray-400 hover:text-white transition text-sm">
                 Privacy Policy
               </Link>
+              <a href="https://surgly.app/data-deletion-instructions" className="block text-gray-400 hover:text-white transition text-sm">
+                Data Deletion
+              </a>
               <Link to="/terms" className="block text-gray-400 hover:text-white transition text-sm">
-                Terms
-              </Link>
-              <Link to="/refund" className="block text-gray-400 hover:text-white transition text-sm">
-                Refund Policy
+                Terms of Service
               </Link>
             </div>
           </div>

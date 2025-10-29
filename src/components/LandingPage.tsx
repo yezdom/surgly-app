@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Rocket, Activity, Palette, BarChart3, Sun, Moon } from 'lucide-react';
+import { ArrowRight, Rocket, Activity, Palette, BarChart3, Sun, Moon, ChevronDown } from 'lucide-react';
+import { useState } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import Logo from './Logo';
 import Footer from './Footer';
@@ -7,6 +8,38 @@ import SEO from './SEO';
 
 export default function LandingPage() {
   const { theme, toggleTheme } = useTheme();
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+  const toggleFaq = (index: number) => {
+    setOpenFaq(openFaq === index ? null : index);
+  };
+
+  const faqs = [
+    {
+      question: 'What is Dr. Surgly?',
+      answer: 'Dr. Surgly is an AI-powered advertising platform that analyzes ad campaigns, detects performance issues, and prescribes optimization recommendations to improve ROI.'
+    },
+    {
+      question: 'How does Surgly improve my campaigns?',
+      answer: 'It monitors performance, detects inefficiencies, and suggests data-backed fixes before your budget is wasted.'
+    },
+    {
+      question: 'What are your current plans and pricing?',
+      answer: 'Free 3-Day Trial (1 Account), Starter £29, Pro £49, Agency £99 per month with 20% annual discount. All plans include full AI features; Agency adds White Label Downloads.'
+    },
+    {
+      question: 'Can I cancel anytime?',
+      answer: 'Yes — cancel or upgrade any time from your dashboard.'
+    },
+    {
+      question: 'Is my data secure?',
+      answer: 'Yes — Surgly uses OAuth 2.0 and encrypted Supabase storage.'
+    },
+    {
+      question: 'Do I get real-time updates?',
+      answer: 'Yes — reports and recommendations refresh dynamically.'
+    }
+  ];
 
   return (
     <>
@@ -25,12 +58,12 @@ export default function LandingPage() {
           >
             Features
           </a>
-          <a
-            href="#pricing"
+          <Link
+            to="/pricing"
             className="text-text-light-primary dark:text-white hover:text-accent-blue dark:hover:text-blue-300 transition font-medium"
           >
             Pricing
-          </a>
+          </Link>
           <Link
             to="/contact"
             className="text-text-light-primary dark:text-white hover:text-accent-blue dark:hover:text-blue-300 transition font-medium"
@@ -153,6 +186,51 @@ export default function LandingPage() {
             View Pricing
             <ArrowRight className="w-5 h-5" />
           </Link>
+        </div>
+      </section>
+
+      <section id="faq" className="container mx-auto px-6 py-20">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold text-text-light-primary dark:text-white mb-4">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-xl text-text-light-secondary dark:text-gray-300">
+              Got questions? Dr. Surgly has answers.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {faqs.map((faq, index) => (
+              <div
+                key={index}
+                className="bg-light-secondary dark:bg-white/10 backdrop-blur-lg border border-border-light dark:border-white/20 rounded-xl overflow-hidden transition-all duration-300"
+              >
+                <button
+                  onClick={() => toggleFaq(index)}
+                  className="w-full flex items-center justify-between p-6 text-left hover:bg-light-tertiary dark:hover:bg-white/5 transition"
+                >
+                  <span className="text-lg font-semibold text-text-light-primary dark:text-white">
+                    {faq.question}
+                  </span>
+                  <ChevronDown
+                    className={`w-5 h-5 text-text-light-secondary dark:text-gray-400 transition-transform duration-300 ${
+                      openFaq === index ? 'transform rotate-180' : ''
+                    }`}
+                  />
+                </button>
+                <div
+                  className={`overflow-hidden transition-all duration-300 ${
+                    openFaq === index ? 'max-h-48' : 'max-h-0'
+                  }`}
+                >
+                  <div className="px-6 pb-6 text-text-light-secondary dark:text-gray-300">
+                    {faq.answer}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
