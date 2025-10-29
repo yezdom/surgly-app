@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Rocket, Activity, Palette, BarChart3, Sun, Moon, ChevronDown, Play, Brain, Zap, FileCheck, TrendingUp, Shield, Lock, CheckCircle, Award, Users } from 'lucide-react';
-import { useState } from 'react';
+import { ArrowRight, Rocket, Activity, Palette, BarChart3, Sun, Moon, ChevronDown, Play, Brain, Zap, FileCheck, TrendingUp, Shield, Lock, CheckCircle, Award, Users, Check, PartyPopper } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import Logo from './Logo';
 import Footer from './Footer';
@@ -9,6 +9,14 @@ import SEO from './SEO';
 export default function LandingPage() {
   const { theme, toggleTheme } = useTheme();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>(() => {
+    const saved = localStorage.getItem('billingCycle');
+    return (saved as 'monthly' | 'annual') || 'annual';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('billingCycle', billingCycle);
+  }, [billingCycle]);
 
   const toggleFaq = (index: number) => {
     setOpenFaq(openFaq === index ? null : index);
@@ -58,12 +66,12 @@ export default function LandingPage() {
           >
             Features
           </a>
-          <Link
-            to="/pricing"
+          <a
+            href="#pricing"
             className="text-text-light-primary dark:text-white hover:text-accent-blue dark:hover:text-blue-300 transition font-medium"
           >
             Pricing
-          </Link>
+          </a>
           <Link
             to="/contact"
             className="text-text-light-primary dark:text-white hover:text-accent-blue dark:hover:text-blue-300 transition font-medium"
@@ -311,13 +319,13 @@ export default function LandingPage() {
               </div>
             ))}
           </div>
-          <Link
-            to="/pricing"
+          <a
+            href="#pricing"
             className="inline-flex items-center gap-2 px-8 py-4 bg-white text-purple-900 rounded-lg hover:shadow-xl transition font-bold text-lg"
           >
             View Pricing
             <ArrowRight className="w-5 h-5" />
-          </Link>
+          </a>
         </div>
       </section>
 
@@ -528,12 +536,170 @@ export default function LandingPage() {
               Start Free Trial
               <ArrowRight className="w-5 h-5" />
             </Link>
-            <Link
-              to="/pricing"
+            <a
+              href="#pricing"
               className="inline-flex items-center gap-2 px-10 py-5 bg-blue-800 hover:bg-blue-900 text-white border-2 border-white/30 rounded-xl hover:shadow-xl hover:scale-105 transition-all duration-300 font-bold text-lg"
             >
               See Pricing Plans
-            </Link>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section id="pricing" className="container mx-auto px-6 py-20 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-12 bg-accent-blue text-white py-4 px-6 rounded-lg text-center font-bold text-lg flex items-center justify-center gap-2 max-w-4xl mx-auto shadow-lg">
+            <PartyPopper className="w-6 h-6" />
+            🎉 50% OFF Introductory Offer – Limited Time Only
+          </div>
+
+          <div className="text-center mb-12">
+            <h2 className="text-5xl font-bold text-text-light-primary dark:text-white mb-4">
+              Simple, Transparent Pricing for Every Marketer
+            </h2>
+            <p className="text-xl text-text-light-secondary dark:text-gray-300 mb-8">
+              Whether you're running one ad or a hundred, Dr. Surgly scales with you.
+            </p>
+
+            <div className="flex items-center justify-center gap-4 mb-4">
+              <span className={`text-sm font-medium ${billingCycle === 'monthly' ? 'text-text-light-primary dark:text-white' : 'text-text-light-secondary dark:text-gray-400'}`}>
+                Monthly
+              </span>
+              <button
+                onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'annual' : 'monthly')}
+                className={`relative w-14 h-7 rounded-full transition-colors ${
+                  billingCycle === 'annual' ? 'bg-accent-blue' : 'bg-gray-300 dark:bg-gray-600'
+                }`}
+                aria-label="Toggle billing cycle"
+              >
+                <span
+                  className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full transition-transform ${
+                    billingCycle === 'annual' ? 'transform translate-x-7' : ''
+                  }`}
+                />
+              </button>
+              <span className={`text-sm font-medium ${billingCycle === 'annual' ? 'text-text-light-primary dark:text-white' : 'text-text-light-secondary dark:text-gray-400'}`}>
+                Annual
+              </span>
+              <span className="text-sm text-green-600 dark:text-green-400 font-bold">Save 20%!</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              {
+                name: 'Free Account',
+                monthlyPrice: 0,
+                comparePrice: 0,
+                description: '3-Day Trial (1 Account)',
+                accounts: '1 Ad Account',
+                features: ['Pre-Launch Validator', 'Ad Doctor', 'Creative Insights', 'Reports & Analytics'],
+                cta: 'Start Free',
+                ctaColor: 'bg-gray-500 hover:bg-gray-600',
+                badge: null,
+                borderColor: 'border-gray-300 dark:border-gray-600',
+              },
+              {
+                name: 'Starter',
+                monthlyPrice: 29,
+                comparePrice: 58,
+                description: 'All features included',
+                accounts: '3 Accounts',
+                features: ['All features included'],
+                cta: 'Upgrade to Starter',
+                ctaColor: 'bg-green-600 hover:bg-green-700',
+                badge: null,
+                borderColor: 'border-border-light dark:border-border-dark',
+              },
+              {
+                name: 'Pro',
+                monthlyPrice: 49,
+                comparePrice: 98,
+                description: 'All features included',
+                accounts: '5 Accounts',
+                features: ['All features included'],
+                cta: 'Get Pro',
+                ctaColor: 'bg-accent-blue hover:bg-accent-blueHover',
+                badge: 'Most Popular',
+                borderColor: 'border-blue-400',
+                bgHighlight: 'bg-blue-50 dark:bg-blue-900/10',
+                popular: true,
+              },
+              {
+                name: 'Agency',
+                monthlyPrice: 99,
+                comparePrice: 198,
+                description: 'All features included + White Label Downloads',
+                accounts: '10 Accounts',
+                features: ['All features included', 'White Label Downloads'],
+                cta: 'Upgrade to Agency',
+                ctaColor: 'bg-gray-900 hover:bg-black dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100',
+                badge: null,
+                borderColor: 'border-4 border-transparent',
+              },
+            ].map((plan) => (
+              <div
+                key={plan.name}
+                className={`relative rounded-2xl p-8 border-2 ${plan.borderColor} ${plan.bgHighlight || 'bg-white dark:bg-gray-800'} ${plan.popular ? 'transform scale-105 shadow-2xl' : 'shadow-lg'} transition-all duration-300`}
+              >
+                {plan.badge && (
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-accent-blue text-white px-4 py-1 rounded-full text-sm font-bold">
+                    {plan.badge}
+                  </div>
+                )}
+                <h3 className="text-2xl font-bold text-text-light-primary dark:text-white mb-2">{plan.name}</h3>
+                <p className="text-sm text-text-light-secondary dark:text-gray-400 mb-4">{plan.description}</p>
+
+                <div className="mb-6">
+                  {plan.monthlyPrice === 0 ? (
+                    <div className="text-5xl font-bold text-text-light-primary dark:text-white">£0</div>
+                  ) : (
+                    <>
+                      <div className="text-5xl font-bold text-text-light-primary dark:text-white">
+                        £{plan.monthlyPrice}
+                        <span className="text-lg font-normal text-text-light-secondary dark:text-gray-400">/month</span>
+                      </div>
+                      {billingCycle === 'annual' && (
+                        <div className="mt-2">
+                          <span className="text-sm text-green-600 dark:text-green-400 font-bold">
+                            Annual: £{(plan.monthlyPrice * 12 * 0.8).toFixed(2)}
+                          </span>
+                        </div>
+                      )}
+                      <div className="mt-2">
+                        <span className="text-sm line-through text-red-500">£{plan.comparePrice}</span>
+                      </div>
+                    </>
+                  )}
+                  <div className="text-sm text-text-light-secondary dark:text-gray-400 mt-2">{plan.accounts}</div>
+                </div>
+
+                <ul className="space-y-3 mb-8">
+                  {plan.features.map((feature, idx) => (
+                    <li key={idx} className="flex items-start gap-2 text-sm text-text-light-secondary dark:text-gray-300">
+                      <Check className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <Link
+                  to="/signup"
+                  className={`block w-full text-center px-6 py-3 rounded-lg text-white font-bold transition ${plan.ctaColor}`}
+                >
+                  {plan.cta}
+                </Link>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-center mt-12">
+            <p className="text-sm text-text-light-secondary dark:text-gray-400 mb-2">
+              No contracts. Cancel anytime.
+            </p>
+            <p className="text-xs text-text-light-secondary dark:text-gray-500">
+              All prices exclude applicable taxes. Billing renews automatically.
+            </p>
           </div>
         </div>
       </section>

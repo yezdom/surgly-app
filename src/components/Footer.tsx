@@ -49,9 +49,9 @@ export default function Footer() {
               <a href="/#features" className="block text-gray-400 hover:text-white transition text-sm">
                 Features
               </a>
-              <Link to="/pricing" className="block text-gray-400 hover:text-white transition text-sm">
+              <a href="/#pricing" className="block text-gray-400 hover:text-white transition text-sm">
                 Pricing
-              </Link>
+              </a>
               <Link to="/about" className="block text-gray-400 hover:text-white transition text-sm">
                 About
               </Link>

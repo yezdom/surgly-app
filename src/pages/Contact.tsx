@@ -48,9 +48,9 @@ export default function Contact() {
 
       <div className="container mx-auto px-6 py-20 max-w-4xl flex-1">
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold text-text-light-primary dark:text-white mb-4">Contact Us</h1>
+          <h1 className="text-5xl font-bold text-text-light-primary dark:text-white mb-4">Get in Touch with Dr. Surgly</h1>
           <p className="text-xl text-text-light-secondary dark:text-gray-300">
-            We'd love to hear from you. Reach out for support or business inquiries.
+            We're here 24/7 to help you improve your campaigns.
           </p>
         </div>
 
@@ -146,7 +146,7 @@ export default function Contact() {
 
             {status === 'success' && (
               <div className="p-4 bg-green-500/10 border border-green-500 rounded-lg text-green-600 dark:text-green-400">
-                Thank you for your message! We'll get back to you soon.
+                ✅ Message sent successfully! Our AI support assistant will respond soon.
               </div>
             )}
 
@@ -156,6 +156,27 @@ export default function Contact() {
               </div>
             )}
           </form>
+
+          <div className="mt-8 text-center p-6 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            <p className="text-lg text-text-light-primary dark:text-white mb-4">
+              Prefer instant help? Chat with <strong>Dr. Surgly</strong>, your 24/7 AI Ads Doctor.
+            </p>
+          </div>
+
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6 text-center">
+            <div className="p-6 bg-light-secondary dark:bg-white/10 rounded-lg">
+              <p className="text-sm text-text-light-secondary dark:text-gray-400 mb-2">Email Support</p>
+              <a href="mailto:support@surgly.app" className="text-lg font-semibold text-accent-blue dark:text-blue-400 hover:underline">
+                support@surgly.app
+              </a>
+            </div>
+            <div className="p-6 bg-light-secondary dark:bg-white/10 rounded-lg">
+              <p className="text-sm text-text-light-secondary dark:text-gray-400 mb-2">Global Operations</p>
+              <p className="text-lg font-semibold text-text-light-primary dark:text-white">
+                London | Lisbon | Nairobi
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
