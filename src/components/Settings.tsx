@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useState, useEffect } from 'react';
 import { Settings as SettingsIcon, User, CreditCard, Link as LinkIcon, Bell, ArrowUpCircle, ArrowDownCircle, XCircle, Edit } from 'lucide-react';
+import { createCheckout, createCustomerPortalSession, cancelSubscription } from '../lib/billingService';
 
 export default function Settings() {
   const { user } = useAuth();
@@ -72,8 +73,37 @@ export default function Settings() {
     }
   }
 
-  function showComingSoonAlert() {
-    alert('This feature will be available once Stripe integration is complete.');
+  async function handleUpgrade() {
+    if (!user) return;
+
+    // For now, default to Pro plan. In production, show a plan selector modal
+    await createCheckout({
+      plan: 'pro',
+      userId: user.id,
+      billingCycle: 'monthly'
+    });
+  }
+
+  async function handleManageBilling() {
+    if (!user) return;
+
+    await createCustomerPortalSession(user.id);
+  }
+
+  async function handleCancelSubscription() {
+    if (!user) return;
+
+    const confirmed = confirm(
+      'Are you sure you want to cancel your subscription? It will remain active until the end of your billing period.'
+    );
+
+    if (confirmed) {
+      const success = await cancelSubscription(user.id);
+      if (success) {
+        alert('Your subscription has been scheduled for cancellation at the end of the billing period.');
+        loadUserData(); // Refresh data
+      }
+    }
   }
 
   return (
@@ -211,48 +241,48 @@ export default function Settings() {
                 <CreditCard className="w-6 h-6 text-gray-400" />
                 <div>
                   <p className="text-sm text-text-light-secondary dark:text-text-dark-secondary">
-                    Card ending in 4242
-                  </p>
-                  <p className="text-xs text-text-light-secondary dark:text-text-dark-secondary">
-                    (Stripe Integration Coming Soon)
+                    {subscriptionTier !== 'Free' ? 'Manage payment methods in billing portal' : 'No payment method on file'}
                   </p>
                 </div>
               </div>
             </div>
 
             <div className="space-y-3">
-              <button
-                onClick={showComingSoonAlert}
-                className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:shadow-lg transition font-bold"
-              >
-                <ArrowUpCircle className="w-5 h-5" />
-                Upgrade Plan
-              </button>
+              {subscriptionTier === 'Free' ? (
+                <button
+                  onClick={handleUpgrade}
+                  className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:shadow-lg transition font-bold"
+                >
+                  <ArrowUpCircle className="w-5 h-5" />
+                  Upgrade to Paid Plan
+                </button>
+              ) : (
+                <>
+                  <button
+                    onClick={handleUpgrade}
+                    className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:shadow-lg transition font-bold"
+                  >
+                    <ArrowUpCircle className="w-5 h-5" />
+                    Change Plan
+                  </button>
 
-              <button
-                onClick={showComingSoonAlert}
-                className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-text-light-primary dark:text-text-dark-primary rounded-lg hover:bg-light-secondary dark:hover:bg-dark-tertiary transition font-medium"
-              >
-                <ArrowDownCircle className="w-5 h-5" />
-                Downgrade Plan
-              </button>
+                  <button
+                    onClick={handleCancelSubscription}
+                    className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-text-light-primary dark:text-text-dark-primary rounded-lg hover:bg-light-secondary dark:hover:bg-dark-tertiary transition font-medium"
+                  >
+                    <XCircle className="w-5 h-5" />
+                    Cancel Subscription
+                  </button>
 
-              <button
-                onClick={showComingSoonAlert}
-                className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-text-light-primary dark:text-text-dark-primary rounded-lg hover:bg-light-secondary dark:hover:bg-dark-tertiary transition font-medium"
-              >
-                <XCircle className="w-5 h-5" />
-                Cancel Subscription
-              </button>
-
-              <button
-                onClick={showComingSoonAlert}
-                disabled
-                className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded-lg cursor-not-allowed font-medium opacity-60"
-              >
-                <Edit className="w-5 h-5" />
-                Manage Billing (Coming Soon)
-              </button>
+                  <button
+                    onClick={handleManageBilling}
+                    className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-text-light-primary dark:text-text-dark-primary rounded-lg hover:bg-light-secondary dark:hover:bg-dark-tertiary transition font-medium"
+                  >
+                    <Edit className="w-5 h-5" />
+                    Manage Billing Portal
+                  </button>
+                </>
+              )}
             </div>
           </div>
 
