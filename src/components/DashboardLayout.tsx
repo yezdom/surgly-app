@@ -26,8 +26,18 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   }, [user]);
 
   async function checkAdminStatus() {
-    if (!user) return;
+    if (!user) {
+      setIsAdmin(false);
+      return;
+    }
 
+    // First check if is_admin is already in the user object from AuthContext
+    if (user.is_admin !== undefined) {
+      setIsAdmin(user.is_admin);
+      return;
+    }
+
+    // Otherwise, query Supabase for admin status
     try {
       const { data } = await supabase
         .from('users')
@@ -38,6 +48,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       setIsAdmin(data?.is_admin || false);
     } catch (error) {
       console.error('Failed to check admin status:', error);
+      setIsAdmin(false);
     }
   }
 
