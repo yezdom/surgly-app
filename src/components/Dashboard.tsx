@@ -130,6 +130,21 @@ export default function Dashboard() {
     },
   ];
 
+  const comingSoonPlatforms = [
+    {
+      name: 'TikTok Ads',
+      description: 'Connect and analyze your TikTok ad campaigns with AI-powered insights',
+      icon: '🎵',
+      color: 'from-pink-500 to-rose-500',
+    },
+    {
+      name: 'Google Ads',
+      description: 'Optimize your Google Ads with advanced analytics and recommendations',
+      icon: '🔍',
+      color: 'from-blue-500 to-indigo-500',
+    },
+  ];
+
   return (
     <DashboardLayout>
       <div className="max-w-7xl mx-auto">
@@ -279,6 +294,37 @@ export default function Dashboard() {
                   <ArrowRight className="w-5 h-5 text-text-light-secondary dark:text-text-dark-secondary opacity-0 group-hover:opacity-100 transition" />
                 </div>
               </Link>
+            ))}
+          </div>
+        </div>
+
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-text-light-primary dark:text-text-dark-primary mb-6">
+            Coming Soon
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {comingSoonPlatforms.map((platform) => (
+              <div
+                key={platform.name}
+                className="bg-light-primary dark:bg-dark-secondary border border-border-light dark:border-border-dark rounded-xl p-6 opacity-75 relative overflow-hidden"
+              >
+                <div className="absolute top-4 right-4 px-3 py-1 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs font-bold rounded-full">
+                  COMING SOON
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className={`flex items-center justify-center w-16 h-16 rounded-xl bg-gradient-to-br ${platform.color}`}>
+                    <span className="text-3xl">{platform.icon}</span>
+                  </div>
+                  <div className="flex-1 pr-24">
+                    <h3 className="text-lg font-bold text-text-light-primary dark:text-text-dark-primary mb-2">
+                      {platform.name}
+                    </h3>
+                    <p className="text-sm text-text-light-secondary dark:text-text-dark-secondary">
+                      {platform.description}
+                    </p>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         </div>
