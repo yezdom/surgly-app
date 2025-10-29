@@ -119,16 +119,15 @@ export default function LandingPage() {
               to="/signup"
               className="inline-flex items-center gap-2 px-10 py-5 bg-accent-blue hover:bg-accent-blueHover dark:bg-gradient-to-r dark:from-blue-500 dark:to-purple-500 text-white rounded-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 font-bold text-lg"
             >
-              Start Free Trial
+              Get Started
               <ArrowRight className="w-5 h-5" />
             </Link>
-            <button
-              onClick={() => window.scrollTo({ top: document.getElementById('features')?.offsetTop || 0, behavior: 'smooth' })}
+            <a
+              href="#features"
               className="inline-flex items-center gap-2 px-10 py-5 bg-white dark:bg-gray-800 text-text-light-primary dark:text-white border-2 border-gray-300 dark:border-gray-600 rounded-xl hover:shadow-xl hover:scale-105 transition-all duration-300 font-bold text-lg"
             >
-              <Play className="w-5 h-5" />
-              Watch Demo Video
-            </button>
+              Try Free Demo
+            </a>
           </div>
         </div>
       </section>
@@ -662,7 +661,7 @@ export default function LandingPage() {
                       {billingCycle === 'annual' && (
                         <div className="mt-2">
                           <span className="text-sm text-green-600 dark:text-green-400 font-bold">
-                            Annual: £{(plan.monthlyPrice * 12 * 0.8).toFixed(2)}
+                            Annual: £{Math.round(plan.monthlyPrice * 12 * 0.8)}
                           </span>
                         </div>
                       )}

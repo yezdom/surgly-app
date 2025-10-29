@@ -59,10 +59,7 @@ export default function Privacy() {
           <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
             <h2 className="text-3xl font-bold mb-4">4. Data Retention & Deletion</h2>
             <p className="text-lg leading-relaxed mb-4">
-              You can request account or data deletion at any time via our{' '}
-              <Link to="/data-deletion-instructions" className="text-accent-blue dark:text-blue-400 hover:underline font-semibold">
-                Data Deletion Instructions
-              </Link>.
+              You can request account or data deletion at any time by following the instructions below.
             </p>
             <p className="text-lg leading-relaxed">
               Once processed, all user data and associated analytics are permanently removed from our systems.
@@ -83,6 +80,53 @@ export default function Privacy() {
             <h2 className="text-3xl font-bold mb-4">6. Updates</h2>
             <p className="text-lg leading-relaxed">
               We may update this policy periodically to reflect product improvements. You'll always find the latest version here.
+            </p>
+          </div>
+
+          <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-8">
+            <h2 className="text-3xl font-bold mb-4">7. Data Deletion Instructions</h2>
+            <p className="text-lg leading-relaxed mb-6">
+              To comply with Meta, Google, and TikTok Ads platform requirements, Surgly provides a transparent data deletion process.
+            </p>
+
+            <h3 className="text-2xl font-bold mb-4 text-accent-blue dark:text-blue-400">How to Request Data Deletion:</h3>
+            <ol className="space-y-4 text-lg mb-6">
+              <li className="flex items-start gap-3">
+                <span className="font-bold text-accent-blue dark:text-blue-400 flex-shrink-0">1️⃣</span>
+                <span>Email <strong className="text-accent-blue dark:text-blue-400">privacy@surgly.app</strong> with the subject "Data Deletion Request."</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="font-bold text-accent-blue dark:text-blue-400 flex-shrink-0">2️⃣</span>
+                <span>Include the email linked to your Surgly account.</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="font-bold text-accent-blue dark:text-blue-400 flex-shrink-0">3️⃣</span>
+                <div>
+                  <p className="mb-2">Once verified, we will permanently delete:</p>
+                  <ul className="list-disc list-inside ml-4 space-y-1 text-base">
+                    <li>Your account details (name, email, linked tokens)</li>
+                    <li>Ad analytics and diagnostic data</li>
+                    <li>Stored performance reports</li>
+                  </ul>
+                </div>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="font-bold text-accent-blue dark:text-blue-400 flex-shrink-0">4️⃣</span>
+                <span>Confirmation will be sent once deletion is complete.</span>
+              </li>
+            </ol>
+
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-700 rounded-lg p-4 mb-4">
+              <p className="text-lg font-semibold text-yellow-800 dark:text-yellow-300 mb-2">
+                ⚠️ Note:
+              </p>
+              <p className="text-base text-yellow-700 dark:text-yellow-400">
+                Once data is deleted, it cannot be recovered. Requests are processed within <strong>72 hours</strong> of receipt.
+              </p>
+            </div>
+
+            <p className="text-base text-text-light-secondary dark:text-gray-400 italic">
+              Surgly fully complies with GDPR, CCPA, and ad platform privacy policies.
             </p>
           </div>
 

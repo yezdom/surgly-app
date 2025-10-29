@@ -70,11 +70,8 @@ export default function Footer() {
               <Link to="/privacy" className="block text-gray-400 hover:text-white transition text-sm">
                 Privacy Policy
               </Link>
-              <a href="https://surgly.app/data-deletion-instructions" className="block text-gray-400 hover:text-white transition text-sm">
-                Data Deletion
-              </a>
               <Link to="/terms" className="block text-gray-400 hover:text-white transition text-sm">
-                Terms of Service
+                Terms
               </Link>
             </div>
           </div>
