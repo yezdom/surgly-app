@@ -102,12 +102,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   return (
     <div className="min-h-screen bg-light-secondary dark:bg-dark-primary flex">
-      <aside className="w-64 bg-light-primary dark:bg-dark-secondary border-r border-border-light dark:border-border-dark flex-shrink-0">
+      <aside className="w-64 bg-light-primary dark:bg-dark-secondary border-r border-border-light dark:border-border-dark flex-shrink-0 flex flex-col relative">
         <div className="p-6 border-b border-border-light dark:border-border-dark">
           <div className="text-2xl font-extrabold text-accent-blue">SURGLY</div>
         </div>
 
-        <nav className="space-y-1 px-3 py-6">
+        <nav className="flex-1 space-y-1 px-3 py-6 overflow-y-auto">
           {navigation.map((item) => {
             const isActive = location.pathname === item.href;
 
@@ -165,11 +165,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           })}
         </nav>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border-light dark:border-border-dark">
+        <div className="p-4 border-t border-border-light dark:border-border-dark bg-light-primary dark:bg-dark-secondary">
           <div className="flex items-center justify-between mb-4">
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-lg hover:bg-light-tertiary dark:hover:bg-dark-tertiary transition"
+              className="p-2 rounded-lg hover:bg-light-tertiary dark:hover:bg-dark-tertiary transition-colors duration-200"
+              aria-label="Toggle theme"
             >
               {theme === 'dark' ? (
                 <Sun className="w-5 h-5 text-text-dark-primary" />
@@ -179,7 +180,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             </button>
             <button
               onClick={handleSignOut}
-              className="p-2 rounded-lg hover:bg-light-tertiary dark:hover:bg-dark-tertiary transition text-red-500"
+              className="p-2 rounded-lg hover:bg-red-500/10 transition-colors duration-200 text-red-500 hover:text-red-600"
+              aria-label="Sign out"
             >
               <LogOut className="w-5 h-5" />
             </button>

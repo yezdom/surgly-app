@@ -139,15 +139,24 @@ export default function Dashboard() {
   const comingSoonPlatforms = [
     {
       name: 'TikTok Ads',
-      description: 'Connect and analyze your TikTok ad campaigns with AI-powered insights',
+      description: 'Connect and analyze your TikTok campaigns with AI-powered insights.',
       icon: '🎵',
       color: 'from-pink-500 to-rose-500',
+      bgColor: 'bg-pink-500/10',
     },
     {
       name: 'Google Ads',
-      description: 'Optimize your Google Ads with advanced analytics and recommendations',
+      description: 'Optimize your Google Ads with advanced analytics and recommendations.',
       icon: '🔍',
       color: 'from-blue-500 to-indigo-500',
+      bgColor: 'bg-blue-500/10',
+    },
+    {
+      name: 'Microsoft Ads',
+      description: 'Track and improve your Microsoft Ads performance with AI insights.',
+      icon: '📊',
+      color: 'from-purple-500 to-violet-500',
+      bgColor: 'bg-purple-500/10',
     },
   ];
 
@@ -161,6 +170,36 @@ export default function Dashboard() {
           <p className="text-text-light-secondary dark:text-text-dark-secondary">
             Here's your ad performance overview
           </p>
+        </div>
+
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold text-text-light-primary dark:text-text-dark-primary mb-6">
+            Upcoming Ad Platforms
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {comingSoonPlatforms.map((platform) => (
+              <div
+                key={platform.name}
+                className="group bg-light-primary dark:bg-dark-secondary border border-border-light dark:border-border-dark rounded-xl p-6 relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer"
+              >
+                <div className="absolute top-4 right-4 px-3 py-1 bg-gradient-to-r from-pink-500 to-orange-500 text-white text-xs font-bold rounded-full shadow-lg">
+                  COMING SOON
+                </div>
+                <div className="flex flex-col items-center text-center">
+                  <div className={`flex items-center justify-center w-20 h-20 rounded-xl bg-gradient-to-br ${platform.color} mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                    <span className="text-4xl">{platform.icon}</span>
+                  </div>
+                  <h3 className="text-xl font-bold text-text-light-primary dark:text-text-dark-primary mb-2">
+                    {platform.name}
+                  </h3>
+                  <p className="text-sm text-text-light-secondary dark:text-text-dark-secondary">
+                    {platform.description}
+                  </p>
+                </div>
+                <div className={`absolute inset-0 ${platform.bgColor} opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none`} />
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
@@ -304,36 +343,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-text-light-primary dark:text-text-dark-primary mb-6">
-            Coming Soon
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {comingSoonPlatforms.map((platform) => (
-              <div
-                key={platform.name}
-                className="bg-light-primary dark:bg-dark-secondary border border-border-light dark:border-border-dark rounded-xl p-6 opacity-75 relative overflow-hidden"
-              >
-                <div className="absolute top-4 right-4 px-3 py-1 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs font-bold rounded-full">
-                  COMING SOON
-                </div>
-                <div className="flex items-start gap-4">
-                  <div className={`flex items-center justify-center w-16 h-16 rounded-xl bg-gradient-to-br ${platform.color}`}>
-                    <span className="text-3xl">{platform.icon}</span>
-                  </div>
-                  <div className="flex-1 pr-24">
-                    <h3 className="text-lg font-bold text-text-light-primary dark:text-text-dark-primary mb-2">
-                      {platform.name}
-                    </h3>
-                    <p className="text-sm text-text-light-secondary dark:text-text-dark-secondary">
-                      {platform.description}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
 
         <div className="bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl p-8 text-white">
           <div className="flex items-start justify-between">

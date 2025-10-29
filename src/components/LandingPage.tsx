@@ -1,12 +1,26 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Zap, Shield, TrendingUp } from 'lucide-react';
+import { ArrowRight, Zap, Shield, TrendingUp, Sun, Moon } from 'lucide-react';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function LandingPage() {
+  const { theme, toggleTheme } = useTheme();
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 dark:from-slate-900 dark:via-purple-900 dark:to-slate-900 bg-light-secondary transition-colors duration-300">
       <nav className="container mx-auto px-6 py-6 flex items-center justify-between">
-        <div className="text-3xl font-extrabold text-white">SURGLY</div>
-        <div className="flex gap-4">
+        <div className="text-3xl font-extrabold text-white dark:text-white text-text-light-primary">SURGLY</div>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-lg hover:bg-white/10 dark:hover:bg-white/10 hover:bg-light-tertiary transition-colors duration-200"
+            aria-label="Toggle theme"
+          >
+            {theme === 'dark' ? (
+              <Sun className="w-5 h-5 text-white" />
+            ) : (
+              <Moon className="w-5 h-5 text-text-light-primary" />
+            )}
+          </button>
           <Link
             to="/login"
             className="px-6 py-2 text-white hover:text-blue-300 transition font-medium"
