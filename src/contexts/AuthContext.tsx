@@ -22,79 +22,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check active session and fetch user profile
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session?.user) {
-        const extendedUser = await fetchUserProfile(session.user);
-        setUser(extendedUser);
-      } else {
-        setUser(null);
-      }
+    // 🧭 Detect if running inside Bolt or local development
+    const isBolt =
+      typeof window !== "undefined" && window.location.host.includes("bolt");
+    const isLocal =
+      typeof window !== "undefined" &&
+      (window.location.host.includes("localhost") || window.location.host.includes("127.0.0.1"));
+
+    // 🚨 TEMPORARY DEV BYPASS
+    if (isBolt || isLocal) {
+      console.warn("🧑‍💻 DEV MODE: Auto-login as admin user (bypass auth)");
+      setUser({
+        id: "bolt-dev-admin",
+        email: "ironzola@gmail.com",
+        role: "authenticated",
+        is_active: true,
+      } as ExtendedUser);
       setLoading(false);
-    });
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (session?.user) {
-        const extendedUser = await fetchUserProfile(session.user);
-        setUser(extendedUser);
-      } else {
-        setUser(null);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  async function fetchUserProfile(user: User): Promise<ExtendedUser> {
-    try {
-      const { data } = await supabase
-        .from('users')
-        .select('is_active')
-        .eq('id', user.id)
-        .maybeSingle();
-
-      return {
-        ...user,
-        is_active: data?.is_active ?? true
-      };
-    } catch (error) {
-      console.error('Error fetching user profile:', error);
-      return { ...user, is_active: true };
+      return; // Skip Supabase auth listener in Bolt/local
     }
-  }
 
-  const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw error;
-  };
-
-  const signUp = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({ email, password });
-    if (error) throw error;
-  };
-
-  const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
-  };
-
-  const signInWithGoogle = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
-    if (error) throw error;
-  };
-
-  return (
-    <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut, signInWithGoogle }}>
-      {children}
-    </AuthContext.Provider>
-  );
-}
-
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-}
+    // ✅ Normal Supabase Auth Flow (used in production)
+    supabase.auth.getSession().then(async
