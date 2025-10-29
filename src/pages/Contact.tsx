@@ -3,6 +3,7 @@ import { ArrowLeft, Mail, Send } from 'lucide-react';
 import { useState } from 'react';
 import Logo from '../components/Logo';
 import Footer from '../components/Footer';
+import SEO from '../components/SEO';
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -30,7 +31,13 @@ export default function Contact() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-white dark:bg-gradient-to-br dark:from-slate-900 dark:via-purple-900 dark:to-slate-900 transition-colors duration-500">
+    <>
+      <SEO
+        title="Contact Us | Get Support from Dr. Surgly"
+        description="Reach out anytime — our 24/7 AI assistant, Dr. Surgly, is ready to help optimize your campaigns."
+        canonical="https://surgly.app/contact"
+      />
+      <div className="min-h-screen flex flex-col bg-white dark:bg-gradient-to-br dark:from-slate-900 dark:via-purple-900 dark:to-slate-900 transition-colors duration-500">
       <nav className="container mx-auto px-6 py-6 flex items-center justify-between border-b border-border-light dark:border-transparent">
         <Logo variant="header" linkTo="/" />
         <Link to="/" className="flex items-center gap-2 text-text-light-primary dark:text-white hover:text-accent-blue dark:hover:text-blue-300 transition">
@@ -153,6 +160,7 @@ export default function Contact() {
       </div>
 
       <Footer />
-    </div>
+      </div>
+    </>
   );
 }

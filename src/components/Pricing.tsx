@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Logo from './Logo';
 import Footer from './Footer';
 import { useTheme } from '../contexts/ThemeContext';
+import SEO from './SEO';
 
 export default function Pricing() {
   const { theme } = useTheme();
@@ -103,7 +104,13 @@ export default function Pricing() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-white dark:bg-gradient-to-br dark:from-slate-900 dark:via-purple-900 dark:to-slate-900 transition-colors duration-500">
+    <>
+      <SEO
+        title="Pricing | Flexible Plans for Every Marketer"
+        description="Start free and grow with Surgly. Choose Free, Pro, or Enterprise plans designed for advertisers and agencies."
+        canonical="https://surgly.app/pricing"
+      />
+      <div className="min-h-screen flex flex-col bg-white dark:bg-gradient-to-br dark:from-slate-900 dark:via-purple-900 dark:to-slate-900 transition-colors duration-500">
       <nav className="container mx-auto px-6 py-6 flex items-center justify-between border-b border-border-light dark:border-transparent">
         <Logo variant="header" linkTo="/" />
         <Link
@@ -221,6 +228,7 @@ export default function Pricing() {
       </div>
 
       <Footer />
-    </div>
+      </div>
+    </>
   );
 }

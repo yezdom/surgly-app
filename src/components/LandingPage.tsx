@@ -1,14 +1,21 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Zap, Shield, TrendingUp, Sun, Moon } from 'lucide-react';
+import { ArrowRight, Rocket, Activity, Palette, BarChart3, Sun, Moon } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import Logo from './Logo';
 import Footer from './Footer';
+import SEO from './SEO';
 
 export default function LandingPage() {
   const { theme, toggleTheme } = useTheme();
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gradient-to-br dark:from-slate-900 dark:via-purple-900 dark:to-slate-900 transition-colors duration-500">
+    <>
+      <SEO
+        title="Surgly — AI Ads Doctor for Facebook & Beyond"
+        description="Stop wasting money on underperforming ads. Let Dr. Surgly analyze, treat, and scale your campaigns automatically."
+        canonical="https://surgly.app"
+      />
+      <div className="min-h-screen bg-white dark:bg-gradient-to-br dark:from-slate-900 dark:via-purple-900 dark:to-slate-900 transition-colors duration-500">
       <nav className="container mx-auto px-6 py-6 flex items-center justify-between border-b border-border-light dark:border-transparent bg-white dark:bg-transparent">
         <Logo variant="header" linkTo="/" />
         <div className="flex items-center gap-4">
@@ -60,28 +67,45 @@ export default function LandingPage() {
       </section>
 
       <section className="container mx-auto px-6 py-20">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="bg-light-secondary dark:bg-white/10 backdrop-blur-lg border border-border-light dark:border-white/20 rounded-xl p-8 hover:shadow-lg transition">
-            <Zap className="w-12 h-12 text-blue-500 dark:text-blue-400 mb-4" />
-            <h3 className="text-2xl font-bold text-text-light-primary dark:text-white mb-4">AI-Powered Diagnosis</h3>
-            <p className="text-text-light-secondary dark:text-gray-300">
-              Get instant insights into your campaign performance with advanced AI analysis.
+        <div className="text-center mb-12">
+          <h2 className="text-4xl font-bold text-text-light-primary dark:text-white mb-4">
+            Smarter Ads Through AI-Driven Insights
+          </h2>
+          <p className="text-xl text-text-light-secondary dark:text-gray-300 max-w-3xl mx-auto">
+            Dr. Surgly automatically analyzes ad data, detects performance issues, and prescribes optimizations that improve ROI.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="bg-light-secondary dark:bg-white/10 backdrop-blur-lg border border-border-light dark:border-white/20 rounded-xl p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+            <Rocket className="w-12 h-12 text-blue-500 dark:text-blue-400 mb-4" />
+            <h3 className="text-xl font-bold text-text-light-primary dark:text-white mb-3">Pre-Launch Validator</h3>
+            <p className="text-sm text-text-light-secondary dark:text-gray-300">
+              Checks the health of your ads account and evaluates ad creatives before they go live to predict engagement and conversion potential.
             </p>
           </div>
 
-          <div className="bg-light-secondary dark:bg-white/10 backdrop-blur-lg border border-border-light dark:border-white/20 rounded-xl p-8 hover:shadow-lg transition">
-            <Shield className="w-12 h-12 text-purple-500 dark:text-purple-400 mb-4" />
-            <h3 className="text-2xl font-bold text-text-light-primary dark:text-white mb-4">Budget Protection</h3>
-            <p className="text-text-light-secondary dark:text-gray-300">
-              Monitor spending in real-time and get alerts before you overspend.
+          <div className="bg-light-secondary dark:bg-white/10 backdrop-blur-lg border border-border-light dark:border-white/20 rounded-xl p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+            <Activity className="w-12 h-12 text-green-500 dark:text-green-400 mb-4" />
+            <h3 className="text-xl font-bold text-text-light-primary dark:text-white mb-3">Ad Doctor</h3>
+            <p className="text-sm text-text-light-secondary dark:text-gray-300">
+              Diagnoses campaign inefficiencies, prescribes corrective actions using AI insights, and continuously monitors performance.
             </p>
           </div>
 
-          <div className="bg-light-secondary dark:bg-white/10 backdrop-blur-lg border border-border-light dark:border-white/20 rounded-xl p-8 hover:shadow-lg transition">
-            <TrendingUp className="w-12 h-12 text-pink-500 dark:text-pink-400 mb-4" />
-            <h3 className="text-2xl font-bold text-text-light-primary dark:text-white mb-4">Performance Reports</h3>
-            <p className="text-text-light-secondary dark:text-gray-300">
-              Comprehensive analytics with white-label reports and export options.
+          <div className="bg-light-secondary dark:bg-white/10 backdrop-blur-lg border border-border-light dark:border-white/20 rounded-xl p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+            <Palette className="w-12 h-12 text-purple-500 dark:text-purple-400 mb-4" />
+            <h3 className="text-xl font-bold text-text-light-primary dark:text-white mb-3">Creative Insights</h3>
+            <p className="text-sm text-text-light-secondary dark:text-gray-300">
+              Detects fatigue, audience mismatch, and creative design patterns that underperform. Helps you build visuals that truly convert.
+            </p>
+          </div>
+
+          <div className="bg-light-secondary dark:bg-white/10 backdrop-blur-lg border border-border-light dark:border-white/20 rounded-xl p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+            <BarChart3 className="w-12 h-12 text-pink-500 dark:text-pink-400 mb-4" />
+            <h3 className="text-xl font-bold text-text-light-primary dark:text-white mb-3">Reports & Analytics</h3>
+            <p className="text-sm text-text-light-secondary dark:text-gray-300">
+              Comprehensive campaign performance analysis with export options (PDF, CSV, Excel). Includes White Label reports for agencies in Pro & Enterprise plans.
             </p>
           </div>
         </div>
@@ -115,5 +139,6 @@ export default function LandingPage() {
 
       <Footer />
     </div>
+    </>
   );
 }
