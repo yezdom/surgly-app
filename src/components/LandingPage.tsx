@@ -2,18 +2,19 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Zap, Shield, TrendingUp, Sun, Moon } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import Logo from './Logo';
+import Footer from './Footer';
 
 export default function LandingPage() {
   const { theme, toggleTheme } = useTheme();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 dark:from-slate-900 dark:via-purple-900 dark:to-slate-900 bg-light-secondary transition-colors duration-300">
-      <nav className="container mx-auto px-6 py-6 flex items-center justify-between">
-        <Logo variant="header" linkTo="/" className="text-white" />
+    <div className="min-h-screen bg-white dark:bg-gradient-to-br dark:from-slate-900 dark:via-purple-900 dark:to-slate-900 transition-colors duration-500">
+      <nav className="container mx-auto px-6 py-6 flex items-center justify-between border-b border-border-light dark:border-transparent bg-white dark:bg-transparent">
+        <Logo variant="header" linkTo="/" />
         <div className="flex items-center gap-4">
           <button
             onClick={toggleTheme}
-            className="p-2 rounded-lg hover:bg-white/10 dark:hover:bg-white/10 hover:bg-light-tertiary transition-colors duration-200"
+            className="p-2 rounded-lg hover:bg-light-tertiary dark:hover:bg-white/10 transition-colors duration-200"
             aria-label="Toggle theme"
           >
             {theme === 'dark' ? (
@@ -24,13 +25,13 @@ export default function LandingPage() {
           </button>
           <Link
             to="/login"
-            className="px-6 py-2 text-white hover:text-blue-300 transition font-medium"
+            className="px-6 py-2 text-text-light-primary dark:text-white hover:text-accent-blue dark:hover:text-blue-300 transition font-medium"
           >
             Login
           </Link>
           <Link
             to="/signup"
-            className="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:shadow-lg transition font-medium"
+            className="px-6 py-2 bg-accent-blue hover:bg-accent-blueHover dark:bg-gradient-to-r dark:from-blue-500 dark:to-purple-500 text-white rounded-lg hover:shadow-lg transition font-medium"
           >
             Get Started
           </Link>
@@ -38,20 +39,20 @@ export default function LandingPage() {
       </nav>
 
       <section className="container mx-auto px-6 py-20 text-center">
-        <h1 className="text-6xl font-bold text-white mb-6">
+        <h1 className="text-6xl font-bold text-text-light-primary dark:text-white mb-6">
           Optimize Your Facebook Ads
           <br />
-          <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
             With AI-Powered Insights
           </span>
         </h1>
-        <p className="text-xl text-gray-300 mb-12 max-w-3xl mx-auto">
+        <p className="text-xl text-text-light-secondary dark:text-gray-300 mb-12 max-w-3xl mx-auto">
           Surgly helps you diagnose, optimize, and scale your Facebook ad campaigns with
           intelligent recommendations and comprehensive analytics.
         </p>
         <Link
           to="/signup"
-          className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:shadow-xl transition font-bold text-lg"
+          className="inline-flex items-center gap-2 px-8 py-4 bg-accent-blue hover:bg-accent-blueHover dark:bg-gradient-to-r dark:from-blue-500 dark:to-purple-500 text-white rounded-lg hover:shadow-xl transition font-bold text-lg"
         >
           Start Free Trial
           <ArrowRight className="w-5 h-5" />
@@ -60,26 +61,26 @@ export default function LandingPage() {
 
       <section className="container mx-auto px-6 py-20">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-8">
-            <Zap className="w-12 h-12 text-blue-400 mb-4" />
-            <h3 className="text-2xl font-bold text-white mb-4">AI-Powered Diagnosis</h3>
-            <p className="text-gray-300">
+          <div className="bg-light-secondary dark:bg-white/10 backdrop-blur-lg border border-border-light dark:border-white/20 rounded-xl p-8 hover:shadow-lg transition">
+            <Zap className="w-12 h-12 text-blue-500 dark:text-blue-400 mb-4" />
+            <h3 className="text-2xl font-bold text-text-light-primary dark:text-white mb-4">AI-Powered Diagnosis</h3>
+            <p className="text-text-light-secondary dark:text-gray-300">
               Get instant insights into your campaign performance with advanced AI analysis.
             </p>
           </div>
 
-          <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-8">
-            <Shield className="w-12 h-12 text-purple-400 mb-4" />
-            <h3 className="text-2xl font-bold text-white mb-4">Budget Protection</h3>
-            <p className="text-gray-300">
+          <div className="bg-light-secondary dark:bg-white/10 backdrop-blur-lg border border-border-light dark:border-white/20 rounded-xl p-8 hover:shadow-lg transition">
+            <Shield className="w-12 h-12 text-purple-500 dark:text-purple-400 mb-4" />
+            <h3 className="text-2xl font-bold text-text-light-primary dark:text-white mb-4">Budget Protection</h3>
+            <p className="text-text-light-secondary dark:text-gray-300">
               Monitor spending in real-time and get alerts before you overspend.
             </p>
           </div>
 
-          <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-8">
-            <TrendingUp className="w-12 h-12 text-pink-400 mb-4" />
-            <h3 className="text-2xl font-bold text-white mb-4">Performance Reports</h3>
-            <p className="text-gray-300">
+          <div className="bg-light-secondary dark:bg-white/10 backdrop-blur-lg border border-border-light dark:border-white/20 rounded-xl p-8 hover:shadow-lg transition">
+            <TrendingUp className="w-12 h-12 text-pink-500 dark:text-pink-400 mb-4" />
+            <h3 className="text-2xl font-bold text-text-light-primary dark:text-white mb-4">Performance Reports</h3>
+            <p className="text-text-light-secondary dark:text-gray-300">
               Comprehensive analytics with white-label reports and export options.
             </p>
           </div>
@@ -87,8 +88,8 @@ export default function LandingPage() {
       </section>
 
       <section className="container mx-auto px-6 py-20">
-        <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-12 text-center">
-          <h2 className="text-4xl font-bold text-white mb-8">Trusted by Agencies Worldwide</h2>
+        <div className="bg-light-secondary dark:bg-white/10 backdrop-blur-lg border border-border-light dark:border-white/20 rounded-xl p-12 text-center">
+          <h2 className="text-4xl font-bold text-text-light-primary dark:text-white mb-8">Trusted by Agencies Worldwide</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
             {[
               { label: 'Active Users', value: '10K+' },
@@ -97,8 +98,8 @@ export default function LandingPage() {
               { label: 'Avg ROAS Increase', value: '3.5x' },
             ].map((stat) => (
               <div key={stat.label}>
-                <div className="text-4xl font-bold text-blue-400 mb-2">{stat.value}</div>
-                <div className="text-gray-300">{stat.label}</div>
+                <div className="text-4xl font-bold text-blue-500 dark:text-blue-400 mb-2">{stat.value}</div>
+                <div className="text-text-light-secondary dark:text-gray-300">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -112,50 +113,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <footer className="container mx-auto px-6 py-12 border-t border-white/10">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-          <div>
-            <Logo variant="footer" linkTo="/" className="mb-4" />
-            <p className="text-gray-400">AI-powered Facebook ad optimization platform.</p>
-          </div>
-          <div>
-            <h4 className="font-bold text-white mb-4">Product</h4>
-            <div className="space-y-2">
-              <Link to="/pricing" className="block text-gray-400 hover:text-white transition">
-                Pricing
-              </Link>
-              <Link to="/about" className="block text-gray-400 hover:text-white transition">
-                About
-              </Link>
-            </div>
-          </div>
-          <div>
-            <h4 className="font-bold text-white mb-4">Support</h4>
-            <div className="space-y-2">
-              <Link to="/contact" className="block text-gray-400 hover:text-white transition">
-                Contact
-              </Link>
-            </div>
-          </div>
-          <div>
-            <h4 className="font-bold text-white mb-4">Legal</h4>
-            <div className="space-y-2">
-              <Link to="/privacy" className="block text-gray-400 hover:text-white transition">
-                Privacy
-              </Link>
-              <Link to="/terms" className="block text-gray-400 hover:text-white transition">
-                Terms
-              </Link>
-              <Link to="/refund" className="block text-gray-400 hover:text-white transition">
-                Refund Policy
-              </Link>
-            </div>
-          </div>
-        </div>
-        <div className="text-center text-gray-400 pt-8 border-t border-white/10">
-          © 2024 Surgly. All rights reserved.
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

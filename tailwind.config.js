@@ -12,11 +12,12 @@ export default {
         },
         light: {
           primary: '#FFFFFF',
-          secondary: '#F8FAFC',
-          tertiary: '#F1F5F9',
+          secondary: '#F0F2F5',
+          tertiary: '#E4E6EB',
         },
         accent: {
-          blue: '#4F46E5',
+          blue: '#1877F2',
+          blueHover: '#145DBF',
           purple: '#8B5CF6',
         },
         status: {
@@ -30,13 +31,13 @@ export default {
             secondary: '#94A3B8',
           },
           light: {
-            primary: '#0F172A',
-            secondary: '#64748B',
+            primary: '#050505',
+            secondary: '#65676B',
           },
         },
         border: {
           dark: '#1E293B',
-          light: '#E2E8F0',
+          light: '#CCD0D5',
         },
       },
       fontFamily: {
