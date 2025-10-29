@@ -18,7 +18,25 @@ export default function LandingPage() {
       <div className="min-h-screen bg-white dark:bg-gradient-to-br dark:from-slate-900 dark:via-purple-900 dark:to-slate-900 transition-colors duration-500">
       <nav className="container mx-auto px-6 py-6 flex items-center justify-between border-b border-border-light dark:border-transparent bg-white dark:bg-transparent">
         <Logo variant="header" linkTo="/" />
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-6">
+          <a
+            href="#features"
+            className="text-text-light-primary dark:text-white hover:text-accent-blue dark:hover:text-blue-300 transition font-medium"
+          >
+            Features
+          </a>
+          <a
+            href="#pricing"
+            className="text-text-light-primary dark:text-white hover:text-accent-blue dark:hover:text-blue-300 transition font-medium"
+          >
+            Pricing
+          </a>
+          <Link
+            to="/contact"
+            className="text-text-light-primary dark:text-white hover:text-accent-blue dark:hover:text-blue-300 transition font-medium"
+          >
+            Contact
+          </Link>
           <button
             onClick={toggleTheme}
             className="p-2 rounded-lg hover:bg-light-tertiary dark:hover:bg-white/10 transition-colors duration-200"
@@ -31,12 +49,6 @@ export default function LandingPage() {
             )}
           </button>
           <Link
-            to="/login"
-            className="px-6 py-2 text-text-light-primary dark:text-white hover:text-accent-blue dark:hover:text-blue-300 transition font-medium"
-          >
-            Login
-          </Link>
-          <Link
             to="/signup"
             className="px-6 py-2 bg-accent-blue hover:bg-accent-blueHover dark:bg-gradient-to-r dark:from-blue-500 dark:to-purple-500 text-white rounded-lg hover:shadow-lg transition font-medium"
           >
@@ -47,26 +59,33 @@ export default function LandingPage() {
 
       <section className="container mx-auto px-6 py-20 text-center">
         <h1 className="text-6xl font-bold text-text-light-primary dark:text-white mb-6">
-          Optimize Your Facebook Ads
+          Your Personal AI Ads Doctor
           <br />
           <span className="bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
-            With AI-Powered Insights
+            for Facebook & Beyond
           </span>
         </h1>
         <p className="text-xl text-text-light-secondary dark:text-gray-300 mb-12 max-w-3xl mx-auto">
-          Surgly helps you diagnose, optimize, and scale your Facebook ad campaigns with
-          intelligent recommendations and comprehensive analytics.
+          Stop wasting money on underperforming ads. Let Dr. Surgly diagnose, treat, and scale your campaigns automatically.
         </p>
-        <Link
-          to="/signup"
-          className="inline-flex items-center gap-2 px-8 py-4 bg-accent-blue hover:bg-accent-blueHover dark:bg-gradient-to-r dark:from-blue-500 dark:to-purple-500 text-white rounded-lg hover:shadow-xl transition font-bold text-lg"
-        >
-          Start Free Trial
-          <ArrowRight className="w-5 h-5" />
-        </Link>
+        <div className="flex items-center justify-center gap-4">
+          <a
+            href="#features"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-white dark:bg-gray-800 text-text-light-primary dark:text-white border-2 border-accent-blue rounded-lg hover:shadow-xl transition font-bold text-lg"
+          >
+            Try Free Demo
+          </a>
+          <Link
+            to="/signup"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-accent-blue hover:bg-accent-blueHover dark:bg-gradient-to-r dark:from-blue-500 dark:to-purple-500 text-white rounded-lg hover:shadow-xl transition font-bold text-lg"
+          >
+            Get Started
+            <ArrowRight className="w-5 h-5" />
+          </Link>
+        </div>
       </section>
 
-      <section className="container mx-auto px-6 py-20">
+      <section id="features" className="container mx-auto px-6 py-20">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold text-text-light-primary dark:text-white mb-4">
             Smarter Ads Through AI-Driven Insights
@@ -76,36 +95,36 @@ export default function LandingPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-light-secondary dark:bg-white/10 backdrop-blur-lg border border-border-light dark:border-white/20 rounded-xl p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-            <Rocket className="w-12 h-12 text-blue-500 dark:text-blue-400 mb-4" />
-            <h3 className="text-xl font-bold text-text-light-primary dark:text-white mb-3">Pre-Launch Validator</h3>
-            <p className="text-sm text-text-light-secondary dark:text-gray-300">
-              Checks the health of your ads account and evaluates ad creatives before they go live to predict engagement and conversion potential.
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+          <div className="bg-light-secondary dark:bg-white/10 backdrop-blur-lg border border-border-light dark:border-white/20 rounded-xl p-8 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+            <Rocket className="w-14 h-14 text-blue-500 dark:text-blue-400 mb-6" />
+            <h3 className="text-2xl font-bold text-text-light-primary dark:text-white mb-4">Pre-Launch Validator</h3>
+            <p className="text-base text-text-light-secondary dark:text-gray-300">
+              Evaluate ad creatives before they go live to predict engagement and conversion potential.
             </p>
           </div>
 
-          <div className="bg-light-secondary dark:bg-white/10 backdrop-blur-lg border border-border-light dark:border-white/20 rounded-xl p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-            <Activity className="w-12 h-12 text-green-500 dark:text-green-400 mb-4" />
-            <h3 className="text-xl font-bold text-text-light-primary dark:text-white mb-3">Ad Doctor</h3>
-            <p className="text-sm text-text-light-secondary dark:text-gray-300">
-              Diagnoses campaign inefficiencies, prescribes corrective actions using AI insights, and continuously monitors performance.
+          <div className="bg-light-secondary dark:bg-white/10 backdrop-blur-lg border border-border-light dark:border-white/20 rounded-xl p-8 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+            <Activity className="w-14 h-14 text-green-500 dark:text-green-400 mb-6" />
+            <h3 className="text-2xl font-bold text-text-light-primary dark:text-white mb-4">Ad Doctor</h3>
+            <p className="text-base text-text-light-secondary dark:text-gray-300">
+              Diagnose campaign inefficiencies and prescribe corrective actions using AI insights.
             </p>
           </div>
 
-          <div className="bg-light-secondary dark:bg-white/10 backdrop-blur-lg border border-border-light dark:border-white/20 rounded-xl p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-            <Palette className="w-12 h-12 text-purple-500 dark:text-purple-400 mb-4" />
-            <h3 className="text-xl font-bold text-text-light-primary dark:text-white mb-3">Creative Insights</h3>
-            <p className="text-sm text-text-light-secondary dark:text-gray-300">
-              Detects fatigue, audience mismatch, and creative design patterns that underperform. Helps you build visuals that truly convert.
+          <div className="bg-light-secondary dark:bg-white/10 backdrop-blur-lg border border-border-light dark:border-white/20 rounded-xl p-8 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+            <Palette className="w-14 h-14 text-purple-500 dark:text-purple-400 mb-6" />
+            <h3 className="text-2xl font-bold text-text-light-primary dark:text-white mb-4">Creative Insights</h3>
+            <p className="text-base text-text-light-secondary dark:text-gray-300">
+              Detect fatigue, audience mismatch, and creative design patterns that underperform.
             </p>
           </div>
 
-          <div className="bg-light-secondary dark:bg-white/10 backdrop-blur-lg border border-border-light dark:border-white/20 rounded-xl p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-            <BarChart3 className="w-12 h-12 text-pink-500 dark:text-pink-400 mb-4" />
-            <h3 className="text-xl font-bold text-text-light-primary dark:text-white mb-3">Reports & Analytics</h3>
-            <p className="text-sm text-text-light-secondary dark:text-gray-300">
-              Comprehensive campaign performance analysis with export options (PDF, CSV, Excel). Includes White Label reports for agencies in Pro & Enterprise plans.
+          <div className="bg-light-secondary dark:bg-white/10 backdrop-blur-lg border border-border-light dark:border-white/20 rounded-xl p-8 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+            <BarChart3 className="w-14 h-14 text-pink-500 dark:text-pink-400 mb-6" />
+            <h3 className="text-2xl font-bold text-text-light-primary dark:text-white mb-4">Reports & Analytics</h3>
+            <p className="text-base text-text-light-secondary dark:text-gray-300">
+              Comprehensive campaign performance analysis with export options (PDF, CSV, Excel). Includes White Label reports for agencies in Pro & Agency plans.
             </p>
           </div>
         </div>
