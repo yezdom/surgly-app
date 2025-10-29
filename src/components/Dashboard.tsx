@@ -4,6 +4,7 @@ import DashboardLayout from './DashboardLayout';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { getAdAccounts, getCampaigns } from '../lib/facebookService';
+import { createAICore, calculateHealthScore } from '../lib/aiCore';
 import {
   TrendingUp,
   DollarSign,
@@ -18,6 +19,8 @@ import {
   Stethoscope,
   Crown,
   Activity,
+  Heart,
+  AlertCircle,
 } from 'lucide-react';
 
 export default function Dashboard() {
@@ -32,6 +35,9 @@ export default function Dashboard() {
   });
   const [subscriptionTier, setSubscriptionTier] = useState('Free');
   const [usageStats, setUsageStats] = useState({ used: 0, limit: 100 });
+  const [healthScore, setHealthScore] = useState(50);
+  const [aiPulse, setAiPulse] = useState<string>('');
+  const [pulseLoading, setPulseLoading] = useState(false);
 
   useEffect(() => {
     loadDashboardData();
