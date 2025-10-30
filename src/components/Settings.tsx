@@ -3,8 +3,9 @@ import FacebookAuthButton from './FacebookAuthButton';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useState, useEffect } from 'react';
-import { Settings as SettingsIcon, User, CreditCard, Link as LinkIcon, Bell, ArrowUpCircle, ArrowDownCircle, XCircle, Edit } from 'lucide-react';
+import { Settings as SettingsIcon, User, CreditCard, Link as LinkIcon, Bell, ArrowUpCircle, ArrowDownCircle, XCircle, Edit, CheckCircle } from 'lucide-react';
 import { createCheckout, createCustomerPortalSession, cancelSubscription } from '../lib/billingService';
+import { checkFacebookConnection, getBusinesses, getAdAccountsFromBusiness, saveSelectedAccount, getSelectedAccount } from '../lib/facebookService';
 
 export default function Settings() {
   const { user } = useAuth();
@@ -20,9 +21,31 @@ export default function Settings() {
     profileImage: ''
   });
 
+  const [facebookConnected, setFacebookConnected] = useState(false);
+  const [businesses, setBusinesses] = useState<any[]>([]);
+  const [adAccounts, setAdAccounts] = useState<any[]>([]);
+  const [selectedBusiness, setSelectedBusiness] = useState('');
+  const [selectedAdAccount, setSelectedAdAccount] = useState('');
+  const [loadingFB, setLoadingFB] = useState(false);
+  const [savingAccount, setSavingAccount] = useState(false);
+
   useEffect(() => {
     loadUserData();
+    checkFBConnection();
   }, [user]);
+
+  useEffect(() => {
+    if (facebookConnected) {
+      loadBusinesses();
+      loadSavedAccount();
+    }
+  }, [facebookConnected]);
+
+  useEffect(() => {
+    if (selectedBusiness) {
+      loadAdAccounts();
+    }
+  }, [selectedBusiness]);
 
   async function loadUserData() {
     if (!user) return;
@@ -88,6 +111,69 @@ export default function Settings() {
     if (!user) return;
 
     await createCustomerPortalSession(user.id);
+  }
+
+  async function checkFBConnection() {
+    const connected = await checkFacebookConnection();
+    setFacebookConnected(connected);
+  }
+
+  async function loadBusinesses() {
+    try {
+      setLoadingFB(true);
+      const bizList = await getBusinesses();
+      setBusinesses(bizList);
+    } catch (error) {
+      console.error('Failed to load businesses:', error);
+    } finally {
+      setLoadingFB(false);
+    }
+  }
+
+  async function loadAdAccounts() {
+    if (!selectedBusiness) return;
+
+    try {
+      setLoadingFB(true);
+      const accounts = await getAdAccountsFromBusiness(selectedBusiness);
+      setAdAccounts(accounts);
+    } catch (error) {
+      console.error('Failed to load ad accounts:', error);
+    } finally {
+      setLoadingFB(false);
+    }
+  }
+
+  async function loadSavedAccount() {
+    try {
+      const saved = await getSelectedAccount();
+      if (saved) {
+        setSelectedBusiness(saved.business_id);
+        setSelectedAdAccount(saved.account_id);
+      }
+    } catch (error) {
+      console.error('Failed to load saved account:', error);
+    }
+  }
+
+  async function handleSaveAccount() {
+    if (!selectedBusiness || !selectedAdAccount) {
+      alert('Please select both a business and an ad account.');
+      return;
+    }
+
+    try {
+      setSavingAccount(true);
+      const accountName = adAccounts.find(a => a.account_id === selectedAdAccount)?.name || 'Ad Account';
+      await saveSelectedAccount(selectedBusiness, selectedAdAccount, accountName);
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+    } catch (error) {
+      console.error('Failed to save account:', error);
+      alert('Failed to save ad account selection.');
+    } finally {
+      setSavingAccount(false);
+    }
   }
 
   async function handleCancelSubscription() {
@@ -296,21 +382,84 @@ export default function Settings() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
               {/* Facebook Integration */}
-              <div className="p-6 bg-white dark:bg-dark-tertiary border border-border-light dark:border-border-dark rounded-lg">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">
-                    f
+              <div className="p-6 bg-white dark:bg-dark-tertiary border border-border-light dark:border-border-dark rounded-lg md:col-span-2">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">
+                      f
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-text-light-primary dark:text-text-dark-primary">
+                        Facebook Integration
+                      </h3>
+                      {facebookConnected && (
+                        <div className="flex items-center gap-1 text-sm text-green-600 dark:text-green-400">
+                          <CheckCircle className="w-4 h-4" />
+                          Connected
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-text-light-primary dark:text-text-dark-primary">
-                      Facebook Integration
-                    </h3>
-                  </div>
+                  <FacebookAuthButton />
                 </div>
-                <p className="text-sm text-text-light-secondary dark:text-text-dark-secondary mb-4">
-                  Connect your Facebook account to access your ad campaigns.
-                </p>
-                <FacebookAuthButton />
+
+                {facebookConnected && (
+                  <div className="space-y-4 mt-6 pt-6 border-t border-border-light dark:border-border-dark">
+                    <p className="text-sm text-text-light-secondary dark:text-text-dark-secondary mb-4">
+                      Select your business and ad account to analyze campaigns
+                    </p>
+
+                    <div>
+                      <label className="block text-sm font-medium text-text-light-secondary dark:text-text-dark-secondary mb-2">
+                        Business
+                      </label>
+                      <select
+                        value={selectedBusiness}
+                        onChange={(e) => setSelectedBusiness(e.target.value)}
+                        disabled={loadingFB}
+                        className="w-full px-4 py-2 bg-white dark:bg-dark-tertiary border border-border-light dark:border-border-dark rounded-lg text-text-light-primary dark:text-text-dark-primary focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">Select a business...</option>
+                        {businesses.map((biz) => (
+                          <option key={biz.id} value={biz.id}>
+                            {biz.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {selectedBusiness && (
+                      <div>
+                        <label className="block text-sm font-medium text-text-light-secondary dark:text-text-dark-secondary mb-2">
+                          Ad Account
+                        </label>
+                        <select
+                          value={selectedAdAccount}
+                          onChange={(e) => setSelectedAdAccount(e.target.value)}
+                          disabled={loadingFB}
+                          className="w-full px-4 py-2 bg-white dark:bg-dark-tertiary border border-border-light dark:border-border-dark rounded-lg text-text-light-primary dark:text-text-dark-primary focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option value="">Select an ad account...</option>
+                          {adAccounts.map((account) => (
+                            <option key={account.id} value={account.account_id}>
+                              {account.name} ({account.account_id})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    {selectedBusiness && selectedAdAccount && (
+                      <button
+                        onClick={handleSaveAccount}
+                        disabled={savingAccount}
+                        className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition disabled:opacity-50"
+                      >
+                        {savingAccount ? 'Saving...' : 'Save Selection'}
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* TikTok Integration - Coming Soon */}

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import DashboardLayout from './DashboardLayout';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
-import { getAdAccounts, getCampaigns } from '../lib/facebookService';
+import { getAdAccounts, getCampaigns, checkFacebookConnection, getSelectedAccount, getInsights } from '../lib/facebookService';
 import { createAICore, calculateHealthScore } from '../lib/aiCore';
 import {
   TrendingUp,
@@ -33,6 +33,8 @@ export default function Dashboard() {
     avgROAS: 0,
     connectedAccounts: 0,
   });
+  const [facebookConnected, setFacebookConnected] = useState(false);
+  const [selectedAccount, setSelectedAccount] = useState<any>(null);
   const [subscriptionTier, setSubscriptionTier] = useState('Free');
   const [usageStats, setUsageStats] = useState({ used: 0, limit: 100 });
   const [healthScore, setHealthScore] = useState(50);
@@ -66,36 +68,34 @@ export default function Dashboard() {
         }
       }
 
-      try {
-        const accounts = await getAdAccounts();
-        setStats(prev => ({ ...prev, connectedAccounts: accounts.length }));
+      const connected = await checkFacebookConnection();
+      setFacebookConnected(connected);
 
-        if (accounts.length > 0) {
-          const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-            .toISOString()
-            .split('T')[0];
-          const today = new Date().toISOString().split('T')[0];
+      if (connected) {
+        const savedAccount = await getSelectedAccount();
+        setSelectedAccount(savedAccount);
 
-          const response = await getCampaigns(accounts[0].account_id, sevenDaysAgo, today);
-          const campaigns = response.data || [];
+        if (savedAccount) {
+          try {
+            const insights = await getInsights(savedAccount.account_id, 'last_7d');
 
-          const totalSpend = campaigns.reduce(
-            (sum: number, c: any) => sum + parseFloat(c.insights?.spend || '0'),
-            0
-          );
-          const avgROAS = campaigns.length > 0
-            ? campaigns.reduce((sum: number, c: any) => sum + parseFloat(c.insights?.roas || '0'), 0) / campaigns.length
-            : 0;
+            const accounts = await getAdAccounts();
+            const totalAccounts = accounts.length;
 
-          setStats({
-            totalCampaigns: campaigns.length,
-            totalSpend,
-            avgROAS,
-            connectedAccounts: accounts.length,
-          });
+            const response = await getCampaigns(savedAccount.account_id);
+            const campaigns = response.data || [];
+            const activeCampaigns = campaigns.filter((c: any) => c.status === 'ACTIVE').length;
+
+            setStats({
+              totalCampaigns: activeCampaigns,
+              totalSpend: parseFloat(insights.spend),
+              avgROAS: parseFloat(insights.roas),
+              connectedAccounts: totalAccounts,
+            });
+          } catch (error) {
+            console.log('Failed to load Facebook insights:', error);
+          }
         }
-      } catch (error) {
-        console.log('Facebook data not available:', error);
       }
 
       const { count } = await supabase
@@ -181,6 +181,51 @@ export default function Dashboard() {
             Here's your ad performance overview
           </p>
         </div>
+
+        {!facebookConnected && (
+          <div className="mb-6 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-xl p-6">
+            <div className="flex items-start gap-4">
+              <AlertCircle className="w-6 h-6 text-blue-500 flex-shrink-0 mt-1" />
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-text-light-primary dark:text-text-dark-primary mb-2">
+                  Connect Your Facebook Account
+                </h3>
+                <p className="text-text-light-secondary dark:text-text-dark-secondary mb-4">
+                  Connect your Facebook account and select an ad account to unlock live analytics and AI-powered insights.
+                </p>
+                <Link
+                  to="/settings"
+                  className="inline-flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:shadow-lg transition font-medium"
+                >
+                  <Rocket className="w-4 h-4" />
+                  Go to Settings
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {facebookConnected && !selectedAccount && (
+          <div className="mb-6 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/20 rounded-xl p-6">
+            <div className="flex items-start gap-4">
+              <AlertCircle className="w-6 h-6 text-yellow-500 flex-shrink-0 mt-1" />
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-text-light-primary dark:text-text-dark-primary mb-2">
+                  Select Your Ad Account
+                </h3>
+                <p className="text-text-light-secondary dark:text-text-dark-secondary mb-4">
+                  You're connected to Facebook! Now select an ad account in Settings to see your live campaign data.
+                </p>
+                <Link
+                  to="/settings"
+                  className="inline-flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-lg hover:shadow-lg transition font-medium"
+                >
+                  Select Account
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="mb-8">
           <h2 className="text-xl font-bold text-text-light-primary dark:text-text-dark-primary mb-4">
