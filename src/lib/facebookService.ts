@@ -140,3 +140,206 @@ export async function checkFacebookConnection(): Promise<boolean> {
     return false;
   }
 }
+
+async function getAccessToken(): Promise<string | null> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return null;
+    }
+
+    const { data } = await supabase
+      .from('facebook_tokens')
+      .select('access_token')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    return data?.access_token || null;
+  } catch (error) {
+    console.error('Error getting access token:', error);
+    return null;
+  }
+}
+
+export async function getBusinesses() {
+  try {
+    const accessToken = await getAccessToken();
+
+    if (!accessToken) {
+      throw new Error('No access token available');
+    }
+
+    const response = await fetch(
+      `https://graph.facebook.com/v18.0/me/businesses?fields=id,name&access_token=${accessToken}`
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch businesses: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.data || [];
+  } catch (error) {
+    console.error('Error fetching businesses:', error);
+    throw error;
+  }
+}
+
+export async function getAdAccountsFromBusiness(businessId: string) {
+  try {
+    const accessToken = await getAccessToken();
+
+    if (!accessToken) {
+      throw new Error('No access token available');
+    }
+
+    const response = await fetch(
+      `https://graph.facebook.com/v18.0/${businessId}/owned_ad_accounts?fields=id,name,account_id,account_status&access_token=${accessToken}`
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch ad accounts: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.data || [];
+  } catch (error) {
+    console.error('Error fetching ad accounts from business:', error);
+    throw error;
+  }
+}
+
+export async function getInsights(adAccountId: string, datePreset: string = 'last_7d') {
+  try {
+    const accessToken = await getAccessToken();
+
+    if (!accessToken) {
+      throw new Error('No access token available');
+    }
+
+    const fields = 'spend,impressions,reach,clicks,ctr,cpc,actions,action_values';
+    const response = await fetch(
+      `https://graph.facebook.com/v18.0/act_${adAccountId}/insights?fields=${fields}&date_preset=${datePreset}&access_token=${accessToken}`
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch insights: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    const insights = data.data?.[0] || {};
+
+    const purchases = insights.actions?.find((a: any) => a.action_type === 'purchase')?.value || '0';
+    const purchaseValue = insights.action_values?.find((a: any) => a.action_type === 'purchase')?.value || '0';
+
+    const roas = parseFloat(insights.spend) > 0
+      ? (parseFloat(purchaseValue) / parseFloat(insights.spend)).toFixed(2)
+      : '0';
+
+    return {
+      spend: insights.spend || '0',
+      impressions: insights.impressions || '0',
+      reach: insights.reach || '0',
+      clicks: insights.clicks || '0',
+      ctr: insights.ctr || '0',
+      cpc: insights.cpc || '0',
+      purchases,
+      purchaseValue,
+      roas,
+    };
+  } catch (error) {
+    console.error('Error fetching insights:', error);
+    throw error;
+  }
+}
+
+export async function getCreatives(adAccountId: string, limit: number = 50) {
+  try {
+    const accessToken = await getAccessToken();
+
+    if (!accessToken) {
+      throw new Error('No access token available');
+    }
+
+    const fields = 'id,name,effective_status,creative{title,body,call_to_action_type,image_url,thumbnail_url,object_story_spec}';
+    const response = await fetch(
+      `https://graph.facebook.com/v18.0/act_${adAccountId}/ads?fields=${fields}&limit=${limit}&access_token=${accessToken}`
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch creatives: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    return (data.data || []).map((ad: any) => ({
+      id: ad.id,
+      name: ad.name,
+      status: ad.effective_status,
+      headline: ad.creative?.title || ad.creative?.object_story_spec?.link_data?.name || '',
+      primaryText: ad.creative?.body || ad.creative?.object_story_spec?.link_data?.message || '',
+      description: ad.creative?.object_story_spec?.link_data?.description || '',
+      cta: ad.creative?.call_to_action_type || ad.creative?.object_story_spec?.link_data?.call_to_action?.type || '',
+      thumbnailUrl: ad.creative?.thumbnail_url || ad.creative?.image_url || ad.creative?.object_story_spec?.link_data?.picture || '',
+    }));
+  } catch (error) {
+    console.error('Error fetching creatives:', error);
+    throw error;
+  }
+}
+
+export async function saveSelectedAccount(businessId: string, adAccountId: string, adAccountName: string) {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      throw new Error('Not authenticated');
+    }
+
+    const { data, error } = await supabase
+      .from('ad_accounts')
+      .upsert({
+        user_id: user.id,
+        business_id: businessId,
+        account_id: adAccountId,
+        name: adAccountName,
+        platform: 'facebook',
+      }, {
+        onConflict: 'user_id,account_id',
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return data;
+  } catch (error) {
+    console.error('Error saving selected account:', error);
+    throw error;
+  }
+}
+
+export async function getSelectedAccount() {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return null;
+    }
+
+    const { data } = await supabase
+      .from('ad_accounts')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('platform', 'facebook')
+      .order('created_at', { ascending: false })
+      .maybeSingle();
+
+    return data;
+  } catch (error) {
+    console.error('Error getting selected account:', error);
+    return null;
+  }
+}

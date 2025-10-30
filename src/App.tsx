@@ -11,6 +11,7 @@ import LockedFeature from './components/LockedFeature';
 import Pricing from './components/Pricing';
 import Settings from './components/Settings';
 import DrSurglyChat from './components/DrSurglyChat';
+import AdminBanner from './components/AdminBanner';
 import About from './pages/About';
 import Terms from './pages/Terms';
 import Privacy from './pages/Privacy';
@@ -231,6 +232,7 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <ThemeProvider>
+          <AdminBanner />
           <AppRoutes />
           <DrSurglyChat />
         </ThemeProvider>
