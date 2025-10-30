@@ -68,7 +68,12 @@ export const TIER_LIMITS: Record<string, TierLimits> = {
   },
 };
 
-export function getTierLimits(tier: string): TierLimits {
+export function getTierLimits(tier: string, userEmail?: string): TierLimits {
+  // Admin override: grant full access to admin account
+  if (userEmail === 'ironzola@gmail.com') {
+    return TIER_LIMITS.Agency;
+  }
+
   return TIER_LIMITS[tier] || TIER_LIMITS.Free;
 }
 

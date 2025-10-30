@@ -58,10 +58,10 @@ export default function Reports() {
   const [generatingInsights, setGeneratingInsights] = useState(false);
 
   const userTier = user?.subscription_tier || 'Free';
-  const tierLimits = getTierLimits(userTier);
-  const canExport = canAccessFeature(userTier, 'canExport');
-  const canEmail = canAccessFeature(userTier, 'canEmail');
-  const canWhiteLabel = canAccessFeature(userTier, 'canWhiteLabel');
+  const tierLimits = getTierLimits(userTier, user?.email);
+  const canExport = user?.email === 'ironzola@gmail.com' || canAccessFeature(userTier, 'canExport');
+  const canEmail = user?.email === 'ironzola@gmail.com' || canAccessFeature(userTier, 'canEmail');
+  const canWhiteLabel = user?.email === 'ironzola@gmail.com' || canAccessFeature(userTier, 'canWhiteLabel');
   const [showWhiteLabelSettings, setShowWhiteLabelSettings] = useState(false);
   const [whiteLabelSettings, setWhiteLabelSettings] = useState({
     companyName: '',

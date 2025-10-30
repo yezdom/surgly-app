@@ -57,7 +57,13 @@ export default function Dashboard() {
 
       if (userData) {
         setIsAdmin(userData.is_admin || false);
-        setSubscriptionTier(userData.subscription_tier || 'Free');
+
+        // Admin override: grant Agency tier access
+        if (user.email === 'ironzola@gmail.com') {
+          setSubscriptionTier('Agency');
+        } else {
+          setSubscriptionTier(userData.subscription_tier || 'Free');
+        }
       }
 
       try {
@@ -107,32 +113,36 @@ export default function Dashboard() {
 
   const features = [
     {
-      title: 'Reports & Analytics',
-      description: 'Comprehensive performance reports with export capabilities',
-      icon: BarChart3,
-      href: '/reports',
-      color: 'from-green-500 to-teal-500',
+      title: 'Pre-Launch Validator',
+      description: 'Evaluate ad creatives before they go live to predict engagement and conversion potential.',
+      icon: Rocket,
+      href: '/validator',
+      color: 'from-blue-500 to-purple-500',
+      tooltip: 'Click to start new ad validation',
     },
     {
       title: 'Ad Doctor',
-      description: 'AI-powered diagnosis of your campaign performance',
+      description: 'Diagnose campaign inefficiencies and prescribe corrective actions using AI insights.',
       icon: Stethoscope,
       href: '/doctor',
       color: 'from-red-500 to-pink-500',
+      tooltip: 'Diagnose your campaign\'s performance in real time',
     },
     {
       title: 'Creative Insights',
-      description: 'Analyze your ad creatives and get improvement suggestions',
+      description: 'Detect fatigue, audience mismatch, and creative design patterns that underperform.',
       icon: ImageIcon,
       href: '/creative',
       color: 'from-purple-500 to-pink-500',
+      tooltip: 'Reveal audience trends and creative patterns',
     },
     {
-      title: 'Activity Monitor',
-      description: 'Track recent campaign activity and alerts',
-      icon: Activity,
+      title: 'Reports & Analytics',
+      description: 'Comprehensive campaign performance analysis with export options (PDF, CSV, and Excel).',
+      icon: BarChart3,
       href: '/reports',
-      color: 'from-blue-500 to-cyan-500',
+      color: 'from-green-500 to-teal-500',
+      tooltip: 'View and export your campaign results',
     },
   ];
 
@@ -324,10 +334,11 @@ export default function Dashboard() {
               <Link
                 key={feature.href}
                 to={feature.href}
-                className="group bg-light-primary dark:bg-dark-secondary border border-border-light dark:border-border-dark rounded-xl p-6 hover:shadow-lg transition"
+                className="group relative bg-light-primary dark:bg-dark-secondary border border-border-light dark:border-border-dark rounded-xl p-6 hover:shadow-lg transition-all duration-300"
+                title={feature.tooltip}
               >
                 <div className="flex items-start gap-4">
-                  <div className={`flex items-center justify-center w-16 h-16 rounded-xl bg-gradient-to-br ${feature.color}`}>
+                  <div className={`flex items-center justify-center w-16 h-16 rounded-xl bg-gradient-to-br ${feature.color} transition-transform duration-300 group-hover:scale-110`}>
                     <feature.icon className="w-8 h-8 text-white" />
                   </div>
                   <div className="flex-1">
@@ -338,7 +349,13 @@ export default function Dashboard() {
                       {feature.description}
                     </p>
                   </div>
-                  <ArrowRight className="w-5 h-5 text-text-light-secondary dark:text-text-dark-secondary opacity-0 group-hover:opacity-100 transition" />
+                  <ArrowRight className="w-5 h-5 text-text-light-secondary dark:text-text-dark-secondary opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </div>
+
+                {/* Hover tooltip */}
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                  {feature.tooltip}
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
                 </div>
               </Link>
             ))}
