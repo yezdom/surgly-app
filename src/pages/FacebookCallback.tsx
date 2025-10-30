@@ -15,6 +15,27 @@ export default function FacebookCallback() {
     try {
       console.log('🔗 Facebook OAuth callback initiated');
 
+      // Verify redirect URI matches environment variable
+      const expectedRedirectUri = import.meta.env.VITE_FACEBOOK_REDIRECT_URI;
+      const currentUrl = window.location.origin + window.location.pathname;
+
+      console.log('🔍 Redirect URI check:', {
+        expected: expectedRedirectUri,
+        current: currentUrl,
+        matches: expectedRedirectUri === currentUrl
+      });
+
+      if (expectedRedirectUri && !currentUrl.includes(expectedRedirectUri.split('?')[0])) {
+        console.warn('⚠️ Redirect URI mismatch detected');
+        setStatus('error');
+        setMessage('Facebook connection failed. Please verify redirect URL settings in your Facebook Developer App.');
+
+        setTimeout(() => {
+          navigate('/settings?tab=integrations&error=redirect_mismatch');
+        }, 4000);
+        return;
+      }
+
       // Check both query params and hash fragments
       const params = new URLSearchParams(window.location.search);
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
@@ -22,11 +43,13 @@ export default function FacebookCallback() {
       const code = params.get('code') || hashParams.get('code');
       const error = params.get('error') || hashParams.get('error');
       const errorDescription = params.get('error_description') || hashParams.get('error_description');
+      const errorReason = params.get('error_reason') || hashParams.get('error_reason');
 
       console.log('📋 OAuth params:', {
         hasCode: !!code,
         error,
         errorDescription,
+        errorReason,
         search: window.location.search,
         hash: window.location.hash
       });
@@ -38,13 +61,15 @@ export default function FacebookCallback() {
 
         if (error === 'access_denied') {
           setMessage('You denied access to Facebook. Please try again and authorize the app.');
+        } else if (error === 'redirect_uri_mismatch') {
+          setMessage('Facebook connection failed. Please verify redirect URL settings in your Facebook Developer App.');
         } else {
           setMessage(`Facebook authentication failed: ${errorDescription || error}`);
         }
 
         setTimeout(() => {
-          navigate('/login?error=oauth_failed');
-        }, 3000);
+          navigate('/settings?tab=integrations&error=oauth_failed');
+        }, 4000);
         return;
       }
 
@@ -52,11 +77,11 @@ export default function FacebookCallback() {
       if (!code) {
         console.error('❌ No authorization code received from Facebook');
         setStatus('error');
-        setMessage('No authorization code received. Please try connecting again.');
+        setMessage('No authorization code received. Facebook connection failed. Please verify redirect URL settings in your Facebook Developer App.');
 
         setTimeout(() => {
-          navigate('/login?error=no_code');
-        }, 3000);
+          navigate('/settings?tab=integrations&error=no_code');
+        }, 4000);
         return;
       }
 
