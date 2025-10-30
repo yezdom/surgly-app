@@ -12,6 +12,7 @@ import Pricing from './components/Pricing';
 import Settings from './components/Settings';
 import DrSurglyChat from './components/DrSurglyChat';
 import AdminBanner from './components/AdminBanner';
+import AdminFacebookStatusWrapper from './components/AdminFacebookStatusWrapper';
 import About from './pages/About';
 import Terms from './pages/Terms';
 import Privacy from './pages/Privacy';
@@ -235,6 +236,7 @@ export default function App() {
           <AdminBanner />
           <AppRoutes />
           <DrSurglyChat />
+          <AdminFacebookStatusWrapper />
         </ThemeProvider>
       </AuthProvider>
     </BrowserRouter>
