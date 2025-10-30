@@ -100,8 +100,9 @@ export default function Validator() {
   const [improvedCopy, setImprovedCopy] = useState<{ headline: string; body: string } | null>(null);
 
   const userPlan = user?.subscription_tier || 'Free';
-  const isPro = userPlan === 'Pro' || userPlan === 'Agency';
-  const isAgency = userPlan === 'Agency';
+  const isAdmin = user?.email === 'ironzola@gmail.com';
+  const isPro = isAdmin || userPlan === 'Pro' || userPlan === 'Agency';
+  const isAgency = isAdmin || userPlan === 'Agency';
 
   useEffect(() => {
     runSystemValidation();
