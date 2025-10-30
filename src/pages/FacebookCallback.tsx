@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { exchangeCodeForToken } from '../lib/facebookService';
 
 export default function FacebookCallback() {
   const navigate = useNavigate();
@@ -15,28 +16,15 @@ export default function FacebookCallback() {
     try {
       console.log('🔗 Facebook OAuth callback initiated');
 
-      // Verify redirect URI matches environment variable
-      const expectedRedirectUri = import.meta.env.VITE_FACEBOOK_REDIRECT_URI;
+      const redirectUri = import.meta.env.VITE_FACEBOOK_REDIRECT_URI ||
+                          `${window.location.origin}/auth/facebook/callback`;
       const currentUrl = window.location.origin + window.location.pathname;
 
       console.log('🔍 Redirect URI check:', {
-        expected: expectedRedirectUri,
+        expected: redirectUri,
         current: currentUrl,
-        matches: expectedRedirectUri === currentUrl
       });
 
-      if (expectedRedirectUri && !currentUrl.includes(expectedRedirectUri.split('?')[0])) {
-        console.warn('⚠️ Redirect URI mismatch detected');
-        setStatus('error');
-        setMessage('Facebook connection failed. Please verify redirect URL settings in your Facebook Developer App.');
-
-        setTimeout(() => {
-          navigate('/settings?tab=integrations&error=redirect_mismatch');
-        }, 4000);
-        return;
-      }
-
-      // Check both query params and hash fragments
       const params = new URLSearchParams(window.location.search);
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
 
@@ -54,7 +42,6 @@ export default function FacebookCallback() {
         hash: window.location.hash
       });
 
-      // Handle error from Facebook
       if (error) {
         console.error('❌ Facebook OAuth error:', error, errorDescription);
         setStatus('error');
@@ -73,7 +60,6 @@ export default function FacebookCallback() {
         return;
       }
 
-      // Handle missing code
       if (!code) {
         console.error('❌ No authorization code received from Facebook');
         setStatus('error');
@@ -85,10 +71,6 @@ export default function FacebookCallback() {
         return;
       }
 
-      console.log('✅ Authorization code received, exchanging for session...');
-      setMessage('Exchanging authorization code...');
-
-      // Get current user session (user must be logged in first)
       const { data: { session } } = await supabase.auth.getSession();
 
       if (!session) {
@@ -103,67 +85,38 @@ export default function FacebookCallback() {
       }
 
       console.log('✅ User session found:', session.user.email);
-      console.log('📡 Calling Edge Function to exchange code for token...');
+      console.log('🔄 Exchanging authorization code for access token...');
+      setMessage('Exchanging authorization code...');
 
-      // Call Edge Function with the code
-      const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+      const result = await exchangeCodeForToken(code);
 
-      const response = await fetch(
-        `${SUPABASE_URL}/functions/v1/facebook-oauth-callback`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ code })
-        }
-      );
+      if (!result.success) {
+        console.error('❌ Token exchange failed:', result.message);
+        setStatus('error');
+        setMessage(result.message);
 
-      console.log('📡 Edge Function response status:', response.status);
-
-      // Check if response is JSON
-      const contentType = response.headers.get('content-type');
-
-      if (!contentType || !contentType.includes('application/json')) {
-        const text = await response.text();
-        console.error('❌ Non-JSON response from Edge Function:', text.substring(0, 200));
-
-        // Check if it's an HTML redirect (common issue)
-        if (text.includes('<!DOCTYPE') || text.includes('<html')) {
-          throw new Error('Server returned HTML instead of JSON. Edge Function may not be deployed correctly.');
-        }
-
-        throw new Error('Server returned invalid response format');
-      }
-
-      const data = await response.json();
-      console.log('📦 Edge Function response:', data);
-
-      if (!response.ok) {
-        console.error('❌ Edge Function error:', data.error);
-        throw new Error(data.error || 'Failed to connect Facebook account');
+        setTimeout(() => {
+          navigate('/settings?tab=integrations&error=token_exchange_failed');
+        }, 4000);
+        return;
       }
 
       console.log('✅ Facebook account connected successfully!');
-      console.log('📊 Ad accounts:', data.ad_accounts?.length || 0);
 
       setStatus('success');
-      setMessage('Facebook account connected successfully!');
+      setMessage(result.message);
 
-      // Redirect to dashboard after 1 second
       setTimeout(() => {
-        navigate('/dashboard?facebook_connected=true');
-      }, 1000);
+        navigate('/settings?tab=integrations&success=facebook_connected');
+      }, 1500);
 
     } catch (err: any) {
       console.error('❌ Facebook callback handler error:', err);
       setStatus('error');
       setMessage(err.message || 'Failed to connect Facebook account');
 
-      // Redirect to login with error after 3 seconds
       setTimeout(() => {
-        navigate(`/login?error=${encodeURIComponent(err.message || 'callback_failed')}`);
+        navigate(`/settings?tab=integrations&error=${encodeURIComponent(err.message || 'callback_failed')}`);
       }, 3000);
     }
   }
@@ -190,7 +143,7 @@ export default function FacebookCallback() {
             <h2 className="text-xl font-bold text-green-600 mb-2">Success!</h2>
             <p className="text-gray-600 dark:text-gray-300">{message}</p>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-              Redirecting to dashboard...
+              Redirecting to settings...
             </p>
           </>
         )}

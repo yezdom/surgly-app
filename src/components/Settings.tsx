@@ -51,11 +51,19 @@ export default function Settings() {
 
       if (error === 'redirect_mismatch' || error === 'no_code' || error === 'oauth_failed') {
         setErrorMessage('Facebook connection failed. Please verify redirect URL settings in your Facebook Developer App.');
+      } else if (error === 'token_exchange_failed') {
+        setErrorMessage('Facebook connection failed. Token exchange error.');
       } else {
         setErrorMessage('Facebook connection failed. Please try again.');
       }
 
       setTimeout(() => setShowErrorToast(false), 5000);
+    }
+
+    const success = searchParams.get('success');
+    if (success === 'facebook_connected') {
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 5000);
     }
   }, [user, searchParams]);
 
@@ -230,7 +238,9 @@ export default function Settings() {
         {showToast && (
           <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in flex items-center gap-2">
             <CheckCircle className="w-5 h-5" />
-            Your changes have been saved successfully.
+            {searchParams.get('success') === 'facebook_connected'
+              ? 'Facebook connected successfully!'
+              : 'Your changes have been saved successfully.'}
           </div>
         )}
 

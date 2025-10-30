@@ -141,6 +141,99 @@ export async function checkFacebookConnection(): Promise<boolean> {
   }
 }
 
+export async function exchangeCodeForToken(code: string): Promise<{ success: boolean; message: string }> {
+  try {
+    console.log('🔄 Starting token exchange...');
+
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+
+    const FACEBOOK_APP_ID = import.meta.env.VITE_FACEBOOK_APP_ID;
+    const FACEBOOK_APP_SECRET = import.meta.env.VITE_FACEBOOK_APP_SECRET;
+    const redirectUri = import.meta.env.VITE_FACEBOOK_REDIRECT_URI ||
+                        `${window.location.origin}/auth/facebook/callback`;
+
+    if (!FACEBOOK_APP_ID || !FACEBOOK_APP_SECRET) {
+      throw new Error('Facebook app credentials not configured');
+    }
+
+    console.log('📡 Exchanging code for access token...');
+
+    const tokenUrl = `https://graph.facebook.com/v18.0/oauth/access_token?client_id=${FACEBOOK_APP_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&client_secret=${FACEBOOK_APP_SECRET}&code=${code}`;
+
+    const tokenResponse = await fetch(tokenUrl);
+
+    if (!tokenResponse.ok) {
+      const errorText = await tokenResponse.text();
+      console.error('❌ Token exchange failed:', errorText);
+      throw new Error('Failed to exchange authorization code for access token');
+    }
+
+    const tokenData = await tokenResponse.json();
+
+    if (!tokenData.access_token) {
+      throw new Error('No access token received from Facebook');
+    }
+
+    console.log('✅ Access token received');
+
+    const expiresIn = tokenData.expires_in || 5184000;
+    const expiresAt = new Date(Date.now() + expiresIn * 1000).toISOString();
+
+    console.log('💾 Storing access token in database...');
+
+    const { error: upsertError } = await supabase
+      .from('facebook_tokens')
+      .upsert(
+        {
+          user_id: user.id,
+          access_token: tokenData.access_token,
+          expires_at: expiresAt,
+          updated_at: new Date().toISOString(),
+        },
+        {
+          onConflict: 'user_id',
+        }
+      );
+
+    if (upsertError) {
+      console.error('❌ Failed to store token:', upsertError);
+      throw new Error('Failed to store access token');
+    }
+
+    console.log('✅ Token stored successfully');
+
+    console.log('📊 Fetching user businesses and ad accounts...');
+
+    try {
+      const businessesUrl = `https://graph.facebook.com/v18.0/me/businesses?access_token=${tokenData.access_token}&fields=id,name`;
+      const businessesResponse = await fetch(businessesUrl);
+
+      if (businessesResponse.ok) {
+        const businessesData = await businessesResponse.json();
+        console.log('✅ Found', businessesData.data?.length || 0, 'businesses');
+      }
+    } catch (err) {
+      console.warn('⚠️ Could not fetch businesses (non-critical):', err);
+    }
+
+    return {
+      success: true,
+      message: 'Facebook connected successfully!'
+    };
+
+  } catch (error: any) {
+    console.error('❌ Token exchange error:', error);
+    return {
+      success: false,
+      message: error.message || 'Connection failed. Please try again.'
+    };
+  }
+}
+
 async function getAccessToken(): Promise<string | null> {
   try {
     const { data: { user } } = await supabase.auth.getUser();
