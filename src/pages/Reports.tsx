@@ -27,27 +27,41 @@ import {
   FileText,
   Sparkles,
   Settings as SettingsIcon,
+  Lock,
+  Mail,
+  Brain,
+  BarChart2,
 } from 'lucide-react';
 import { getAdAccounts, getCampaigns } from '../lib/facebookService';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { supabase } from '../lib/supabase';
+import { getAIReports, getTierLimits, canAccessFeature, AIReport } from '../lib/reportService';
+import { Link } from 'react-router-dom';
 
 const COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#ef4444'];
 
 export default function Reports() {
   const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState<'ai' | 'facebook'>('ai');
   const [loading, setLoading] = useState(true);
   const [adAccounts, setAdAccounts] = useState<any[]>([]);
   const [selectedAccount, setSelectedAccount] = useState<string>('');
   const [campaigns, setCampaigns] = useState<any[]>([]);
+  const [aiReports, setAiReports] = useState<AIReport[]>([]);
   const [startDate, setStartDate] = useState(
     new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
   );
   const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
   const [aiInsights, setAiInsights] = useState<string>('');
   const [generatingInsights, setGeneratingInsights] = useState(false);
+
+  const userTier = user?.subscription_tier || 'Free';
+  const tierLimits = getTierLimits(userTier);
+  const canExport = canAccessFeature(userTier, 'canExport');
+  const canEmail = canAccessFeature(userTier, 'canEmail');
+  const canWhiteLabel = canAccessFeature(userTier, 'canWhiteLabel');
   const [showWhiteLabelSettings, setShowWhiteLabelSettings] = useState(false);
   const [whiteLabelSettings, setWhiteLabelSettings] = useState({
     companyName: '',
@@ -62,6 +76,7 @@ export default function Reports() {
 
   useEffect(() => {
     loadData();
+    loadAIReports();
     loadWhiteLabelSettings();
   }, []);
 
@@ -92,6 +107,17 @@ export default function Reports() {
       setCampaigns(response.data || []);
     } catch (error) {
       console.error('Failed to load campaigns:', error);
+    }
+  }
+
+  async function loadAIReports() {
+    if (!user) return;
+
+    try {
+      const { reports } = await getAIReports(user.id);
+      setAiReports(reports);
+    } catch (error) {
+      console.error('Failed to load AI reports:', error);
     }
   }
 
@@ -271,44 +297,112 @@ export default function Reports() {
   return (
     <DashboardLayout>
       <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-4xl font-bold text-text-light-primary dark:text-text-dark-primary mb-2">
-              Reports & Analytics
-            </h1>
-            <p className="text-text-light-secondary dark:text-text-dark-secondary">
-              Comprehensive campaign performance analysis
-            </p>
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-4xl font-bold text-text-light-primary dark:text-text-dark-primary mb-2">
+                Reports & Analytics
+              </h1>
+              <p className="text-text-light-secondary dark:text-text-dark-secondary">
+                Comprehensive campaign performance analysis
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="px-4 py-2 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-lg">
+                <p className="text-sm font-semibold text-text-light-primary dark:text-text-dark-primary">
+                  Your Plan: {userTier}
+                </p>
+              </div>
+            </div>
           </div>
-          <div className="flex gap-3">
-            <button
-              onClick={() => setShowWhiteLabelSettings(!showWhiteLabelSettings)}
-              className="px-4 py-2 bg-light-primary dark:bg-dark-secondary border border-border-light dark:border-border-dark rounded-lg hover:shadow transition flex items-center gap-2"
-            >
-              <SettingsIcon className="w-4 h-4" />
-              White Label
-            </button>
-            <button
-              onClick={exportToCSV}
-              className="px-4 py-2 bg-light-primary dark:bg-dark-secondary border border-border-light dark:border-border-dark rounded-lg hover:shadow transition flex items-center gap-2"
-            >
-              <Download className="w-4 h-4" />
-              CSV
-            </button>
-            <button
-              onClick={exportToExcel}
-              className="px-4 py-2 bg-light-primary dark:bg-dark-secondary border border-border-light dark:border-border-dark rounded-lg hover:shadow transition flex items-center gap-2"
-            >
-              <Download className="w-4 h-4" />
-              Excel
-            </button>
-            <button
-              onClick={exportToPDF}
-              className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:shadow-lg transition flex items-center gap-2"
-            >
-              <FileText className="w-4 h-4" />
-              PDF
-            </button>
+
+          <div className="flex gap-3 flex-wrap">
+            {canWhiteLabel && (
+              <button
+                onClick={() => setShowWhiteLabelSettings(!showWhiteLabelSettings)}
+                className="px-4 py-2 bg-light-primary dark:bg-dark-secondary border border-border-light dark:border-border-dark rounded-lg hover:shadow transition flex items-center gap-2"
+              >
+                <SettingsIcon className="w-4 h-4" />
+                White Label
+              </button>
+            )}
+            {canExport ? (
+              <>
+                <button
+                  onClick={exportToCSV}
+                  className="px-4 py-2 bg-light-primary dark:bg-dark-secondary border border-border-light dark:border-border-dark rounded-lg hover:shadow transition flex items-center gap-2"
+                >
+                  <Download className="w-4 h-4" />
+                  CSV
+                </button>
+                <button
+                  onClick={exportToExcel}
+                  className="px-4 py-2 bg-light-primary dark:bg-dark-secondary border border-border-light dark:border-border-dark rounded-lg hover:shadow transition flex items-center gap-2"
+                >
+                  <Download className="w-4 h-4" />
+                  Excel
+                </button>
+                <button
+                  onClick={exportToPDF}
+                  className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:shadow-lg transition flex items-center gap-2"
+                >
+                  <FileText className="w-4 h-4" />
+                  PDF
+                </button>
+              </>
+            ) : (
+              <div className="flex items-center gap-2 px-4 py-2 bg-light-secondary dark:bg-dark-tertiary rounded-lg">
+                <Lock className="w-4 h-4 text-text-light-secondary dark:text-text-dark-secondary" />
+                <span className="text-sm text-text-light-secondary dark:text-text-dark-secondary">
+                  Exports available on Pro and Agency plans.{' '}
+                  <Link to="/pricing" className="text-blue-500 underline">
+                    Upgrade now
+                  </Link>
+                </span>
+              </div>
+            )}
+            {canEmail && (
+              <button
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition flex items-center gap-2"
+              >
+                <Mail className="w-4 h-4" />
+                Email Report
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <div className="mb-6">
+          <div className="border-b border-border-light dark:border-border-dark">
+            <div className="flex gap-4">
+              <button
+                onClick={() => setActiveTab('ai')}
+                className={`px-6 py-3 font-semibold transition border-b-2 ${
+                  activeTab === 'ai'
+                    ? 'border-blue-500 text-blue-500'
+                    : 'border-transparent text-text-light-secondary dark:text-text-dark-secondary hover:text-text-light-primary dark:hover:text-text-dark-primary'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Brain className="w-5 h-5" />
+                  AI Predictions ({aiReports.length})
+                </div>
+              </button>
+              <button
+                onClick={() => setActiveTab('facebook')}
+                className={`px-6 py-3 font-semibold transition border-b-2 ${
+                  activeTab === 'facebook'
+                    ? 'border-blue-500 text-blue-500'
+                    : 'border-transparent text-text-light-secondary dark:text-text-dark-secondary hover:text-text-light-primary dark:hover:text-text-dark-primary'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <BarChart2 className="w-5 h-5" />
+                  Live Campaigns ({campaigns.length})
+                </div>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -357,46 +451,168 @@ export default function Reports() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        {/* AI Reports Tab */}
+        {activeTab === 'ai' && (
           <div>
-            <label className="block text-sm font-medium text-text-light-secondary dark:text-text-dark-secondary mb-2">
-              Ad Account
-            </label>
-            <select
-              value={selectedAccount}
-              onChange={(e) => setSelectedAccount(e.target.value)}
-              className="w-full px-4 py-2 bg-light-primary dark:bg-dark-secondary border border-border-light dark:border-border-dark rounded-lg"
-            >
-              {adAccounts.map((account) => (
-                <option key={account.id} value={account.id}>
-                  {account.name}
-                </option>
-              ))}
-            </select>
+            {tierLimits.reportAccess === 'demo' ? (
+              <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-xl p-8 text-center">
+                <Lock className="w-16 h-16 mx-auto mb-4 text-blue-500" />
+                <h3 className="text-2xl font-bold text-text-light-primary dark:text-text-dark-primary mb-2">
+                  Unlock Real Pre-Launch Reports
+                </h3>
+                <p className="text-text-light-secondary dark:text-text-dark-secondary mb-6">
+                  Upgrade to Starter plan to access AI-powered pre-launch validations and live Facebook reports
+                </p>
+                <Link
+                  to="/pricing"
+                  className="inline-block px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:shadow-lg transition font-medium"
+                >
+                  View Plans
+                </Link>
+              </div>
+            ) : aiReports.length === 0 ? (
+              <div className="bg-light-primary dark:bg-dark-secondary border border-border-light dark:border-border-dark rounded-xl p-12 text-center">
+                <Brain className="w-16 h-16 mx-auto mb-4 text-text-light-secondary dark:text-text-dark-secondary" />
+                <h3 className="text-xl font-bold text-text-light-primary dark:text-text-dark-primary mb-2">
+                  No AI Reports Yet
+                </h3>
+                <p className="text-text-light-secondary dark:text-text-dark-secondary mb-6">
+                  Run your first Pre-Launch Validation to see AI-powered insights here
+                </p>
+                <Link
+                  to="/validator"
+                  className="inline-block px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:shadow-lg transition font-medium"
+                >
+                  Go to Pre-Launch Validator
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {aiReports.map((report) => (
+                  <div
+                    key={report.id}
+                    className="bg-light-primary dark:bg-dark-secondary border border-border-light dark:border-border-dark rounded-xl p-6"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1">
+                        <h3 className="text-lg font-bold text-text-light-primary dark:text-text-dark-primary mb-2">
+                          {report.headline || 'Pre-Launch Report'}
+                        </h3>
+                        {report.landing_url && (
+                          <p className="text-sm text-text-light-secondary dark:text-text-dark-secondary mb-2">
+                            {report.landing_url}
+                          </p>
+                        )}
+                        <p className="text-xs text-text-light-secondary dark:text-text-dark-secondary">
+                          {new Date(report.created_at).toLocaleDateString()} at{' '}
+                          {new Date(report.created_at).toLocaleTimeString()}
+                        </p>
+                      </div>
+                      <div className="flex flex-col items-end gap-2">
+                        <div className="text-3xl font-bold text-blue-500">
+                          {Math.round((report.clarity_score + report.conversion_score + (report.emotional_appeal || 0)) / 3)}%
+                        </div>
+                        <p className="text-xs text-text-light-secondary dark:text-text-dark-secondary">
+                          Overall Score
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                      <div>
+                        <p className="text-xs text-text-light-secondary dark:text-text-dark-secondary mb-1">
+                          Clarity
+                        </p>
+                        <p className="text-lg font-bold text-text-light-primary dark:text-text-dark-primary">
+                          {report.clarity_score}%
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-text-light-secondary dark:text-text-dark-secondary mb-1">
+                          Compliance
+                        </p>
+                        <p className="text-lg font-bold text-green-500">
+                          {report.compliance}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-text-light-secondary dark:text-text-dark-secondary mb-1">
+                          Conversion
+                        </p>
+                        <p className="text-lg font-bold text-purple-500">
+                          {report.conversion_score}%
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-text-light-secondary dark:text-text-dark-secondary mb-1">
+                          Engagement
+                        </p>
+                        <p className="text-lg font-bold text-orange-500">
+                          {report.predicted_engagement || 0}%
+                        </p>
+                      </div>
+                    </div>
+
+                    {report.dr_surgly_prescription && (
+                      <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-lg p-4">
+                        <p className="text-sm font-semibold text-text-light-primary dark:text-text-dark-primary mb-2">
+                          🧠 Dr. Surgly's Prescription:
+                        </p>
+                        <p className="text-sm text-text-light-primary dark:text-text-dark-primary">
+                          {report.dr_surgly_prescription}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
+        )}
+
+        {/* Facebook Reports Tab */}
+        {activeTab === 'facebook' && (
           <div>
-            <label className="block text-sm font-medium text-text-light-secondary dark:text-text-dark-secondary mb-2">
-              Start Date
-            </label>
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="w-full px-4 py-2 bg-light-primary dark:bg-dark-secondary border border-border-light dark:border-border-dark rounded-lg"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-text-light-secondary dark:text-text-dark-secondary mb-2">
-              End Date
-            </label>
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="w-full px-4 py-2 bg-light-primary dark:bg-dark-secondary border border-border-light dark:border-border-dark rounded-lg"
-            />
-          </div>
-        </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div>
+                <label className="block text-sm font-medium text-text-light-secondary dark:text-text-dark-secondary mb-2">
+                  Ad Account
+                </label>
+                <select
+                  value={selectedAccount}
+                  onChange={(e) => setSelectedAccount(e.target.value)}
+                  className="w-full px-4 py-2 bg-light-primary dark:bg-dark-secondary border border-border-light dark:border-border-dark rounded-lg"
+                >
+                  {adAccounts.map((account) => (
+                    <option key={account.id} value={account.id}>
+                      {account.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-text-light-secondary dark:text-text-dark-secondary mb-2">
+                  Start Date
+                </label>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="w-full px-4 py-2 bg-light-primary dark:bg-dark-secondary border border-border-light dark:border-border-dark rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-text-light-secondary dark:text-text-dark-secondary mb-2">
+                  End Date
+                </label>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="w-full px-4 py-2 bg-light-primary dark:bg-dark-secondary border border-border-light dark:border-border-dark rounded-lg"
+                />
+              </div>
+            </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-light-primary dark:bg-dark-secondary border border-border-light dark:border-border-dark rounded-xl p-6">
@@ -639,6 +855,8 @@ export default function Reports() {
             </table>
           </div>
         </div>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );

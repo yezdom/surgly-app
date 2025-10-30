@@ -15,6 +15,7 @@ import {
   LandingPageAuditResult,
 } from '../lib/validationService';
 import { fetchLandingContent, LandingPageExtraction } from '../lib/fetchLandingContent';
+import { savePreLaunchReport } from '../lib/reportService';
 import {
   CheckCircle,
   XCircle,
@@ -265,6 +266,22 @@ export default function Validator() {
       // Analyze with AI (pass hasImages flag)
       const result = await auditLandingPage(extraction.summary, extraction.images.length > 0);
       setLandingResult(result);
+
+      // Save report to database
+      if (user) {
+        const saveResult = await savePreLaunchReport(
+          user.id,
+          landingUrl,
+          result,
+          extraction
+        );
+
+        if (saveResult.success) {
+          console.log('✅ Report saved to database:', saveResult.reportId);
+        } else {
+          console.warn('⚠️ Failed to save report:', saveResult.error);
+        }
+      }
     } catch (error: any) {
       alert(error.message || 'Failed to validate landing page');
     } finally {
