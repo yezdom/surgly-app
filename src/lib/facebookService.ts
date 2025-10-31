@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { getValidFacebookToken, getFacebookToken } from './facebookAuthRefresh';
 
 // Helper function to calculate date range (last 90 days)
 export function getDateRange(daysBack: number = 90): { startDate: string; endDate: string } {
@@ -123,18 +124,14 @@ export async function checkFacebookConnection(): Promise<boolean> {
       return false;
     }
 
-    const { data } = await supabase
-      .from('facebook_tokens')
-      .select('id, expires_at')
-      .eq('user_id', user.id)
-      .maybeSingle();
+    const token = await getFacebookToken(user.id);
 
-    if (!data) {
+    if (!token || !token.is_valid) {
       return false;
     }
 
-    const expiresAt = new Date(data.expires_at);
-    return expiresAt > new Date();
+    const validToken = await getValidFacebookToken(user.id);
+    return !!validToken;
   } catch (error) {
     console.error('Error checking Facebook connection:', error);
     return false;
