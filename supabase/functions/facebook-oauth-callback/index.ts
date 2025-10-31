@@ -44,8 +44,18 @@ Deno.serve(async (req: Request) => {
 
     console.log('✅ User authenticated:', user.email);
 
-    const requestBody = await req.json();
-    const { code, state } = requestBody;
+    let code: string | null = null;
+    let state: string | null = null;
+
+    if (req.method === 'GET') {
+      const url = new URL(req.url);
+      code = url.searchParams.get('code');
+      state = url.searchParams.get('state');
+    } else if (req.method === 'POST') {
+      const requestBody = await req.json();
+      code = requestBody.code;
+      state = requestBody.state;
+    }
 
     console.log('📋 Incoming query params:', {
       code: code ? `${code.substring(0, 20)}...` : null,

@@ -107,7 +107,7 @@ export default function FacebookCallback() {
       setMessage(result.message);
 
       setTimeout(() => {
-        navigate('/settings?tab=integrations&success=facebook_connected');
+        navigate('/settings?tab=integrations&connected=facebook');
       }, 1500);
 
     } catch (err: any) {

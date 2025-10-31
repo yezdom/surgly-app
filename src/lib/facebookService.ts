@@ -145,25 +145,16 @@ export async function exchangeCodeForToken(code: string): Promise<{ success: boo
   try {
     console.log('🔄 Starting server-side token exchange...');
 
-    const { data: { session } } = await supabase.auth.getSession();
-
-    if (!session?.access_token) {
-      throw new Error('User not authenticated');
-    }
-
-    const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-
     console.log('📡 Calling Edge Function for token exchange...');
 
     const response = await fetch(
-      `${SUPABASE_URL}/functions/v1/facebook-oauth-callback`,
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/facebook-oauth-callback?code=${code}`,
       {
-        method: 'POST',
+        method: 'GET',
         headers: {
-          'Authorization': `Bearer ${session.access_token}`,
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
           'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ code })
+        }
       }
     );
 

@@ -61,7 +61,8 @@ export default function Settings() {
     }
 
     const success = searchParams.get('success');
-    if (success === 'facebook_connected') {
+    const connected = searchParams.get('connected');
+    if (success === 'facebook_connected' || connected === 'facebook') {
       setShowToast(true);
       setTimeout(() => setShowToast(false), 5000);
     }
