@@ -293,6 +293,21 @@ export default function Admin() {
   return (
     <DashboardLayout>
       <div className="max-w-7xl mx-auto">
+        {/* Admin Testing Mode Banner */}
+        <div className="mb-6 bg-gradient-to-r from-purple-500/10 via-blue-500/10 to-purple-500/10 border border-purple-500/30 rounded-xl p-4">
+          <div className="flex items-center gap-3">
+            <div className="text-2xl">🧠</div>
+            <div>
+              <h2 className="text-lg font-bold text-purple-600 dark:text-purple-400">
+                Admin Panel — Testing Mode Enabled
+              </h2>
+              <p className="text-sm text-text-light-secondary dark:text-text-dark-secondary">
+                Full access to user management, billing controls, and system analytics
+              </p>
+            </div>
+          </div>
+        </div>
+
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-text-light-primary dark:text-text-dark-primary mb-2 flex items-center gap-3">
             <Shield className="w-10 h-10 text-blue-500" />
