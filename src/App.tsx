@@ -1,3 +1,4 @@
+// 🔁 Force rebuild for Vercel - Nov 1
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
